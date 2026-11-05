@@ -102,3 +102,7 @@ public/images/         # product photos + placeholder
 
 - Currency is IDR (`Rp`) throughout the UI; sales totals are recomputed server-side from database prices, discounts are clamped to `[0, subtotal]`, and cash requires paid ≥ total.
 - Admin-gated actions (product CRUD, restock, void, role management) are enforced both in the UI and inside the server actions.
+
+## License
+
+[MIT](LICENSE). Security issues should be reported through [SECURITY.md](SECURITY.md) — please don't open public issues for them.
