@@ -21,6 +21,19 @@ function getSupabase() {
   return createClient(url, key);
 }
 
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
+const ALLOWED_IMAGE_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
+
+function validateImageFile(file: File): string | null {
+	if (!ALLOWED_IMAGE_MIME.has(file.type)) {
+		return "Gambar harus berformat JPG, PNG, atau WebP.";
+	}
+	if (file.size > MAX_IMAGE_BYTES) {
+		return "Ukuran gambar maksimal 5 MB.";
+	}
+	return null;
+}
+
 export async function createProduct(formData: FormData) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -55,10 +68,14 @@ export async function createProduct(formData: FormData) {
       return { success: false, error: "Menu items must have at least 1 ingredient." };
     }
 
-    let imageUrl = "/images/placeholder.jpg"; // Default fallback
+    let imageUrl = "/images/placeholder.svg"; // Default fallback
 
     // Attempt Image Upload if a valid file exists
     if (imageFile && imageFile.size > 0) {
+      const validationError = validateImageFile(imageFile);
+      if (validationError) {
+        return { success: false, error: validationError };
+      }
       try {
         const supabase = getSupabase();
         const fileExt = imageFile.name.split('.').pop();
@@ -168,6 +185,10 @@ export async function editProduct(formData: FormData) {
 
     // Handle Image Upload if a new file is provided
     if (imageFile && imageFile.size > 0 && imageFile.name !== 'undefined') {
+      const validationError = validateImageFile(imageFile);
+      if (validationError) {
+        return { success: false, error: validationError };
+      }
       try {
         const supabase = getSupabase();
         const fileExt = imageFile.name.split('.').pop() || 'jpg';

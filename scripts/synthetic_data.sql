@@ -1,117 +1,149 @@
--- Realistic synthetic data for The Atelier POS
--- Execute this directly in your Supabase SQL editor.
--- Note: This is an additive script. If you already have data, this will add to it without conflicts because it uses fixed, unique UUIDs.
+-- Synthetic demo data for The Atelier POS.
+-- Loaded by `npm run db:seed` (scripts/seed.ts) against any PostgreSQL instance.
+-- Idempotent: products / inventory / shop settings are refreshed on conflict;
+-- transactions and recipe history are inserted only once.
 
 -----------------------------------------------------------
--- 1. Create Staff / Users
+-- 1. Staff / Users
 -----------------------------------------------------------
-INSERT INTO "user" (id, name, email, email_verified, role, created_at, updated_at) 
-VALUES 
+INSERT INTO "user" (id, name, email, email_verified, role, created_at, updated_at)
+VALUES
   ('a1b2c3d4-0000-0000-0000-000000000001', 'Julian V.', 'julian@theatelier.com', true, 'admin', NOW() - INTERVAL '30 days', NOW()),
   ('a1b2c3d4-0000-0000-0000-000000000002', 'Elena M.', 'elena@theatelier.com', true, 'barista', NOW() - INTERVAL '15 days', NOW()),
   ('a1b2c3d4-0000-0000-0000-000000000003', 'Sasha M.', 'sasha@theatelier.com', true, 'barista', NOW() - INTERVAL '10 days', NOW())
 ON CONFLICT (id) DO NOTHING;
 
 -----------------------------------------------------------
--- 2. Create Products (Raw Materials)
+-- 2. Shop settings (singleton row used by receipts & POS)
+-----------------------------------------------------------
+INSERT INTO "shop_settings" (id, shop_name, address, phone, receipt_footer, currency, tax_enabled, tax_rate_percent)
+VALUES (
+  'default',
+  'The Atelier',
+  'Jl. Kemang Raya No. 12, Jakarta Selatan',
+  '+62 812-3456-7890',
+  'Terima kasih sudah berkunjung!',
+  'IDR',
+  false,
+  0
+)
+ON CONFLICT (id) DO UPDATE SET
+  shop_name = EXCLUDED.shop_name,
+  address = EXCLUDED.address,
+  phone = EXCLUDED.phone,
+  receipt_footer = EXCLUDED.receipt_footer,
+  currency = EXCLUDED.currency,
+  updated_at = NOW();
+
+-----------------------------------------------------------
+-- 3. Raw materials
 -----------------------------------------------------------
 INSERT INTO "products" (id, name, description, price, category, type, image_url, created_at)
 VALUES
-  ('b1b2c3d4-0000-0000-0000-000000000010', 'Robusta Beans (1kg)', 'Premium Robusta for signature espresso', 15.00, 'Beans', 'raw_material', NULL, NOW() - INTERVAL '30 days'),
-  ('b1b2c3d4-0000-0000-0000-000000000011', 'Fresh Milk (1L)', 'Whole pasteurized milk', 2.50, 'Dairy', 'raw_material', NULL, NOW() - INTERVAL '30 days'),
-  ('b1b2c3d4-0000-0000-0000-000000000012', 'Gula Aren Syrup (1L)', 'Authentic Indonesian palm sugar syrup', 4.00, 'Syrup', 'raw_material', NULL, NOW() - INTERVAL '30 days'),
-  ('b1b2c3d4-0000-0000-0000-000000000013', 'Premium Vanilla Syrup (1L)', 'Madagascar vanilla extract', 8.50, 'Syrup', 'raw_material', NULL, NOW() - INTERVAL '30 days')
-ON CONFLICT (id) DO NOTHING;
+  ('b1b2c3d4-0000-0000-0000-000000000010', 'Robusta Beans (1kg)', 'Robusta pilihan untuk espresso signature.', 120000, 'Beans', 'raw_material', '/images/ethiopian.jpg', NOW() - INTERVAL '30 days'),
+  ('b1b2c3d4-0000-0000-0000-000000000011', 'Fresh Milk (1L)', 'Susu murni pasteurisasi.', 18000, 'Dairy', 'raw_material', NULL, NOW() - INTERVAL '30 days'),
+  ('b1b2c3d4-0000-0000-0000-000000000012', 'Gula Aren Syrup (1L)', 'Sirup gula aren asli Nusantara.', 35000, 'Syrup', 'raw_material', NULL, NOW() - INTERVAL '30 days'),
+  ('b1b2c3d4-0000-0000-0000-000000000013', 'Vanilla Syrup (1L)', 'Ekstrak vanilla premium.', 55000, 'Syrup', 'raw_material', NULL, NOW() - INTERVAL '30 days')
+ON CONFLICT (id) DO UPDATE SET
+  description = EXCLUDED.description,
+  price = EXCLUDED.price,
+  category = EXCLUDED.category,
+  image_url = EXCLUDED.image_url;
 
 -----------------------------------------------------------
--- 3. Create Products (Retail / Pastries)
+-- 4. Retail products
 -----------------------------------------------------------
 INSERT INTO "products" (id, name, description, price, category, type, image_url, created_at)
 VALUES
-  ('b1b2c3d4-0000-0000-0000-000000000020', 'Butter Croissant', 'Flaky butter croissant baked daily', 3.50, 'Pastry', 'retail', NULL, NOW() - INTERVAL '20 days'),
-  ('b1b2c3d4-0000-0000-0000-000000000021', 'Atelier Tumbler', 'Stainless steel double wall tumbler 500ml', 25.00, 'Merchandise', 'retail', NULL, NOW() - INTERVAL '20 days')
-ON CONFLICT (id) DO NOTHING;
+  ('b1b2c3d4-0000-0000-0000-000000000020', 'Butter Croissant', 'Croissant mentega yang dipanggang setiap hari.', 25000, 'Pastry', 'retail', '/images/croissant.jpg', NOW() - INTERVAL '20 days'),
+  ('b1b2c3d4-0000-0000-0000-000000000021', 'Atelier Mug', 'Mug keramik eksklusif berlogo The Atelier.', 150000, 'Merchandise', 'retail', '/images/mug.jpg', NOW() - INTERVAL '20 days')
+ON CONFLICT (id) DO UPDATE SET
+  description = EXCLUDED.description,
+  price = EXCLUDED.price,
+  category = EXCLUDED.category,
+  image_url = EXCLUDED.image_url;
 
 -----------------------------------------------------------
--- 4. Create Products (Menu Items)
+-- 5. Menu items
 -----------------------------------------------------------
 INSERT INTO "products" (id, name, description, price, category, type, image_url, created_at)
 VALUES
-  ('b1b2c3d4-0000-0000-0000-000000000030', 'Kopi Susu Gula Aren', 'Perpaduan kopi robusta pilihan dengan gula aren asli', 4.50, 'Coffee', 'menu', NULL, NOW() - INTERVAL '15 days'),
-  ('b1b2c3d4-0000-0000-0000-000000000031', 'Coffee Latte', 'Espresso shot dengan steamed milk lembut', 5.00, 'Coffee', 'menu', NULL, NOW() - INTERVAL '15 days'),
-  ('b1b2c3d4-0000-0000-0000-000000000032', 'Vanilla Latte', 'Latte klasik dengan vanilla premium', 5.50, 'Coffee', 'menu', NULL, NOW() - INTERVAL '15 days')
-ON CONFLICT (id) DO NOTHING;
+  ('b1b2c3d4-0000-0000-0000-000000000030', 'Kopi Susu Gula Aren', 'Perpaduan kopi robusta pilihan dengan gula aren asli.', 28000, 'Coffee', 'menu', '/images/oat-latte.jpg', NOW() - INTERVAL '15 days'),
+  ('b1b2c3d4-0000-0000-0000-000000000031', 'Coffee Latte', 'Espresso shot dengan steamed milk lembut.', 32000, 'Coffee', 'menu', '/images/latte.png', NOW() - INTERVAL '15 days'),
+  ('b1b2c3d4-0000-0000-0000-000000000032', 'Vanilla Latte', 'Latte klasik dengan sentuhan vanilla premium.', 35000, 'Coffee', 'menu', '/images/flat-white.png', NOW() - INTERVAL '15 days')
+ON CONFLICT (id) DO UPDATE SET
+  description = EXCLUDED.description,
+  price = EXCLUDED.price,
+  category = EXCLUDED.category,
+  image_url = EXCLUDED.image_url;
 
 -----------------------------------------------------------
--- 5. Inventory Items (Linking Raw Materials & Retail)
+-- 6. Inventory (raw materials & retail)
 -----------------------------------------------------------
 INSERT INTO "inventory" (id, product_id, current_stock, unit, supplier, status, last_restocked)
 VALUES
-  ('c1b2c3d4-0000-0000-0000-000000000010', 'b1b2c3d4-0000-0000-0000-000000000010', 50, 'grams', 'Local Roasters', 'in_stock', NOW()),
-  ('c1b2c3d4-0000-0000-0000-000000000011', 'b1b2c3d4-0000-0000-0000-000000000011', 20, 'ml', 'Dairy Farms Inc', 'in_stock', NOW()),
-  ('c1b2c3d4-0000-0000-0000-000000000012', 'b1b2c3d4-0000-0000-0000-000000000012', 3, 'ml', 'Artisan Syrups', 'low_stock', NOW() - INTERVAL '5 days'),
-  ('c1b2c3d4-0000-0000-0000-000000000020', 'b1b2c3d4-0000-0000-0000-000000000020', 12, 'pcs', 'In-house Bakery', 'in_stock', NOW() - INTERVAL '1 day'),
-  ('c1b2c3d4-0000-0000-0000-000000000021', 'b1b2c3d4-0000-0000-0000-000000000021', 0, 'pcs', 'Merch Co', 'out_of_stock', NOW() - INTERVAL '14 days')
-ON CONFLICT (id) DO NOTHING;
+  ('c1b2c3d4-0000-0000-0000-000000000010', 'b1b2c3d4-0000-0000-0000-000000000010', 50, 'kg', 'Roastery Lokal', 'in_stock', NOW()),
+  ('c1b2c3d4-0000-0000-0000-000000000011', 'b1b2c3d4-0000-0000-0000-000000000011', 20, 'liter', 'Peternakan Segar', 'in_stock', NOW()),
+  ('c1b2c3d4-0000-0000-0000-000000000012', 'b1b2c3d4-0000-0000-0000-000000000012', 3, 'liter', 'Suplier Sirup', 'low_stock', NOW() - INTERVAL '5 days'),
+  ('c1b2c3d4-0000-0000-0000-000000000020', 'b1b2c3d4-0000-0000-0000-000000000020', 12, 'pcs', 'Dapur Sendiri', 'in_stock', NOW() - INTERVAL '1 day'),
+  ('c1b2c3d4-0000-0000-0000-000000000021', 'b1b2c3d4-0000-0000-0000-000000000021', 0, 'pcs', 'Distributor Merch', 'out_of_stock', NOW() - INTERVAL '14 days')
+ON CONFLICT (id) DO UPDATE SET
+  current_stock = EXCLUDED.current_stock,
+  unit = EXCLUDED.unit,
+  supplier = EXCLUDED.supplier,
+  status = EXCLUDED.status,
+  last_restocked = EXCLUDED.last_restocked;
 
 -----------------------------------------------------------
--- 6. Recipe Mappings (Menu Items to Raw Materials)
+-- 7. Recipe mappings (menu -> raw materials)
 -----------------------------------------------------------
--- Kopi Susu Gula Aren: requires Beans, Milk, Gula Aren
+-- Kopi Susu Gula Aren: beans, milk, gula aren
 INSERT INTO "recipe_ingredients" (id, menu_product_id, raw_material_id, quantity_needed, unit)
 VALUES
-  ('d1b2c3d4-0000-0000-0000-000000000001', 'b1b2c3d4-0000-0000-0000-000000000030', 'b1b2c3d4-0000-0000-0000-000000000010', 18, 'grams'),
+  ('d1b2c3d4-0000-0000-0000-000000000001', 'b1b2c3d4-0000-0000-0000-000000000030', 'b1b2c3d4-0000-0000-0000-000000000010', 18, 'gram'),
   ('d1b2c3d4-0000-0000-0000-000000000002', 'b1b2c3d4-0000-0000-0000-000000000030', 'b1b2c3d4-0000-0000-0000-000000000011', 150, 'ml'),
   ('d1b2c3d4-0000-0000-0000-000000000003', 'b1b2c3d4-0000-0000-0000-000000000030', 'b1b2c3d4-0000-0000-0000-000000000012', 20, 'ml')
 ON CONFLICT (id) DO NOTHING;
 
--- Coffee Latte: requires Beans, Milk
+-- Coffee Latte: beans, milk
 INSERT INTO "recipe_ingredients" (id, menu_product_id, raw_material_id, quantity_needed, unit)
 VALUES
-  ('d1b2c3d4-0000-0000-0000-000000000004', 'b1b2c3d4-0000-0000-0000-000000000031', 'b1b2c3d4-0000-0000-0000-000000000010', 18, 'grams'),
+  ('d1b2c3d4-0000-0000-0000-000000000004', 'b1b2c3d4-0000-0000-0000-000000000031', 'b1b2c3d4-0000-0000-0000-000000000010', 18, 'gram'),
   ('d1b2c3d4-0000-0000-0000-000000000005', 'b1b2c3d4-0000-0000-0000-000000000031', 'b1b2c3d4-0000-0000-0000-000000000011', 200, 'ml')
 ON CONFLICT (id) DO NOTHING;
 
 -----------------------------------------------------------
--- 7. Transactions (Historical data spread across last 7 days)
+-- 8. Transactions (historical data spread over the last 6 days)
 -----------------------------------------------------------
-INSERT INTO "transactions" (id, cashier_id, total_amount, payment_method, status, customer_name, table_number, created_at)
+INSERT INTO "transactions" (id, cashier_id, subtotal, tax_amount, discount_amount, paid_amount, change_amount, total_amount, payment_method, status, customer_name, table_number, created_at)
 VALUES
-  ('e1b2c3d4-0000-0000-0000-000000000001', 'a1b2c3d4-0000-0000-0000-000000000002', 12.50, 'card', 'completed', 'Marcus Thorne', 'T1', NOW() - INTERVAL '1 day'),
-  ('e1b2c3d4-0000-0000-0000-000000000002', 'a1b2c3d4-0000-0000-0000-000000000003', 4.50, 'cash', 'completed', 'Guest', 'Takeaway', NOW() - INTERVAL '2 days'),
-  ('e1b2c3d4-0000-0000-0000-000000000003', 'a1b2c3d4-0000-0000-0000-000000000001', 8.50, 'qr_code', 'completed', 'Sarah Jennings', 'T4', NOW() - INTERVAL '3 days'),
-  ('e1b2c3d4-0000-0000-0000-000000000004', 'a1b2c3d4-0000-0000-0000-000000000002', 17.50, 'card', 'completed', 'David Chen', 'T2', NOW() - INTERVAL '4 days'),
-  ('e1b2c3d4-0000-0000-0000-000000000005', 'a1b2c3d4-0000-0000-0000-000000000003', 5.00, 'cash', 'completed', 'Guest', 'Takeaway', NOW() - INTERVAL '5 days'),
-  ('e1b2c3d4-0000-0000-0000-000000000006', 'a1b2c3d4-0000-0000-0000-000000000001', 9.00, 'card', 'completed', 'Aisha Romero', 'T3', NOW() - INTERVAL '6 days')
+  ('e1b2c3d4-0000-0000-0000-000000000001', 'a1b2c3d4-0000-0000-0000-000000000002', 81000, 0, 0, 81000, 0, 81000, 'card', 'completed', 'Budi Santoso', 'T1', NOW() - INTERVAL '1 day'),
+  ('e1b2c3d4-0000-0000-0000-000000000002', 'a1b2c3d4-0000-0000-0000-000000000003', 28000, 0, 0, 50000, 22000, 28000, 'cash', 'completed', NULL, 'Takeaway', NOW() - INTERVAL '2 days'),
+  ('e1b2c3d4-0000-0000-0000-000000000003', 'a1b2c3d4-0000-0000-0000-000000000001', 57000, 0, 0, 57000, 0, 57000, 'qr_code', 'completed', 'Siti Rahma', 'T4', NOW() - INTERVAL '3 days'),
+  ('e1b2c3d4-0000-0000-0000-000000000004', 'a1b2c3d4-0000-0000-0000-000000000002', 113000, 0, 0, 113000, 0, 113000, 'card', 'completed', 'Andi Wijaya', 'T2', NOW() - INTERVAL '4 days'),
+  ('e1b2c3d4-0000-0000-0000-000000000005', 'a1b2c3d4-0000-0000-0000-000000000003', 32000, 0, 0, 50000, 18000, 32000, 'cash', 'completed', NULL, 'Takeaway', NOW() - INTERVAL '5 days'),
+  ('e1b2c3d4-0000-0000-0000-000000000006', 'a1b2c3d4-0000-0000-0000-000000000001', 56000, 0, 0, 56000, 0, 56000, 'card', 'completed', 'Dewi Lestari', 'T3', NOW() - INTERVAL '6 days')
 ON CONFLICT (id) DO NOTHING;
 
 -----------------------------------------------------------
--- 8. Transaction Items (Linking specific items to receipts)
+-- 9. Transaction items
 -----------------------------------------------------------
 INSERT INTO "transaction_items" (id, transaction_id, product_id, quantity, price_at_time)
 VALUES
-  -- Trans 1: 2x Kopi Susu, 1x Croissant ($9.00 + $3.50 = 12.50)
-  ('f1b2c3d4-0000-0000-0000-000000000001', 'e1b2c3d4-0000-0000-0000-000000000001', 'b1b2c3d4-0000-0000-0000-000000000030', 2, 4.50),
-  ('f1b2c3d4-0000-0000-0000-000000000002', 'e1b2c3d4-0000-0000-0000-000000000001', 'b1b2c3d4-0000-0000-0000-000000000020', 1, 3.50),
-  
-  -- Trans 2: 1x Kopi Susu ($4.50)
-  ('f1b2c3d4-0000-0000-0000-000000000003', 'e1b2c3d4-0000-0000-0000-000000000002', 'b1b2c3d4-0000-0000-0000-000000000030', 1, 4.50),
-
-  -- Trans 3: 1x Coffee Latte, 1x Butter Croissant ($5.00 + $3.50 = 8.50)
-  ('f1b2c3d4-0000-0000-0000-000000000004', 'e1b2c3d4-0000-0000-0000-000000000003', 'b1b2c3d4-0000-0000-0000-000000000031', 1, 5.00),
-  ('f1b2c3d4-0000-0000-0000-000000000005', 'e1b2c3d4-0000-0000-0000-000000000003', 'b1b2c3d4-0000-0000-0000-000000000020', 1, 3.50),
-
-  -- Trans 4: 1x Tumbler, 1x Coffee Latte, 1x Croissant ($25.00? Wait, price was 17.50. Let's do 2x Vanilla Latte, 2x Croissant = 11 + 7 = 18.00. I'll adjust the trans 4 row above to match the items here or vice versa. Let's match items to the math: 2x Vanilla Latte ($11.00) + 1x Kopi Susu ($4.50) = 15.50 + 2.00? I'll just change the transaction items to match 17.50)
-  -- 2x Vanilla Latte = 11.00, 1x Kopi Susu = 4.50, Total 15.50. Plus 2.00? Let's just make it 3x Vanilla Latte = 16.50 + 1.00? No, let's do 1x Vanilla Latte (5.50) + 2x Kopi Susu (9.00) + 1x Croissant (3.00 if discounted, or just fix the query math). Let's do 1x Kopi Susu (4.50) + 1x Coffee Latte (5.00) + 1x Vanilla Latte (5.50) + 1x Croissant (2.50 discount) = 17.50.
-  ('f1b2c3d4-0000-0000-0000-000000000006', 'e1b2c3d4-0000-0000-0000-000000000004', 'b1b2c3d4-0000-0000-0000-000000000030', 2, 4.50), -- 9.00
-  ('f1b2c3d4-0000-0000-0000-000000000007', 'e1b2c3d4-0000-0000-0000-000000000004', 'b1b2c3d4-0000-0000-0000-000000000031', 1, 5.00), -- 5.00
-  ('f1b2c3d4-0000-0000-0000-000000000008', 'e1b2c3d4-0000-0000-0000-000000000004', 'b1b2c3d4-0000-0000-0000-000000000020', 1, 3.50), -- 3.50. Total = 17.50
-
-  -- Trans 5: 1x Coffee Latte ($5.00)
-  ('f1b2c3d4-0000-0000-0000-000000000009', 'e1b2c3d4-0000-0000-0000-000000000005', 'b1b2c3d4-0000-0000-0000-000000000031', 1, 5.00),
-  
-  -- Trans 6: 2x Kopi Susu Gula Aren ($9.00)
-  ('f1b2c3d4-0000-0000-0000-000000000010', 'e1b2c3d4-0000-0000-0000-000000000006', 'b1b2c3d4-0000-0000-0000-000000000030', 2, 4.50)
+  -- Trans 1: 2x Kopi Susu (56.000) + 1x Croissant (25.000) = 81.000
+  ('f1b2c3d4-0000-0000-0000-000000000001', 'e1b2c3d4-0000-0000-0000-000000000001', 'b1b2c3d4-0000-0000-0000-000000000030', 2, 28000),
+  ('f1b2c3d4-0000-0000-0000-000000000002', 'e1b2c3d4-0000-0000-0000-000000000001', 'b1b2c3d4-0000-0000-0000-000000000020', 1, 25000),
+  -- Trans 2: 1x Kopi Susu (28.000)
+  ('f1b2c3d4-0000-0000-0000-000000000003', 'e1b2c3d4-0000-0000-0000-000000000002', 'b1b2c3d4-0000-0000-0000-000000000030', 1, 28000),
+  -- Trans 3: 1x Coffee Latte (32.000) + 1x Croissant (25.000) = 57.000
+  ('f1b2c3d4-0000-0000-0000-000000000004', 'e1b2c3d4-0000-0000-0000-000000000003', 'b1b2c3d4-0000-0000-0000-000000000031', 1, 32000),
+  ('f1b2c3d4-0000-0000-0000-000000000005', 'e1b2c3d4-0000-0000-0000-000000000003', 'b1b2c3d4-0000-0000-0000-000000000020', 1, 25000),
+  -- Trans 4: 2x Kopi Susu (56.000) + 1x Coffee Latte (32.000) + 1x Croissant (25.000) = 113.000
+  ('f1b2c3d4-0000-0000-0000-000000000006', 'e1b2c3d4-0000-0000-0000-000000000004', 'b1b2c3d4-0000-0000-0000-000000000030', 2, 28000),
+  ('f1b2c3d4-0000-0000-0000-000000000007', 'e1b2c3d4-0000-0000-0000-000000000004', 'b1b2c3d4-0000-0000-0000-000000000031', 1, 32000),
+  ('f1b2c3d4-0000-0000-0000-000000000008', 'e1b2c3d4-0000-0000-0000-000000000004', 'b1b2c3d4-0000-0000-0000-000000000020', 1, 25000),
+  -- Trans 5: 1x Coffee Latte (32.000)
+  ('f1b2c3d4-0000-0000-0000-000000000009', 'e1b2c3d4-0000-0000-0000-000000000005', 'b1b2c3d4-0000-0000-0000-000000000031', 1, 32000),
+  -- Trans 6: 2x Kopi Susu (56.000)
+  ('f1b2c3d4-0000-0000-0000-000000000010', 'e1b2c3d4-0000-0000-0000-000000000006', 'b1b2c3d4-0000-0000-0000-000000000030', 2, 28000)
 ON CONFLICT (id) DO NOTHING;
-
--- (End of Script)

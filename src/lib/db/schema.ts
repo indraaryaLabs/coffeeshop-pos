@@ -1,5 +1,6 @@
 import { pgTable, text, timestamp, integer, numeric, uuid, pgEnum, boolean } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
+import { check, index } from "drizzle-orm/pg-core";
 
 // Enums
 export const roleEnum = pgEnum("role", ["admin", "barista"]);
@@ -57,6 +58,33 @@ export const verification = pgTable("verification", {
 	updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// --- Shift Management ---
+
+export const shifts = pgTable("shifts", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	openedBy: uuid("opened_by").notNull().references(() => user.id),
+	openedAt: timestamp("opened_at").notNull().defaultNow(),
+	closedAt: timestamp("closed_at"),
+	openingCash: numeric("opening_cash", { precision: 12, scale: 2 }).notNull().default("0"),
+	countedCash: numeric("counted_cash", { precision: 12, scale: 2 }),
+	expectedCash: numeric("expected_cash", { precision: 12, scale: 2 }),
+	note: text("note"),
+});
+
+// --- Shop Configuration (singleton row) ---
+
+export const shopSettings = pgTable("shop_settings", {
+	id: text("id").primaryKey().default("default"),
+	shopName: text("shop_name").notNull().default("The Atelier"),
+	address: text("address").notNull().default(""),
+	phone: text("phone").notNull().default(""),
+	receiptFooter: text("receipt_footer").notNull().default("Terima kasih!"),
+	currency: text("currency").notNull().default("IDR"),
+	taxEnabled: boolean("tax_enabled").notNull().default(false),
+	taxRatePercent: numeric("tax_rate_percent", { precision: 5, scale: 2 }).notNull().default("0"),
+	updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // --- Core POS Entities ---
 
 export const products = pgTable("products", {
@@ -70,34 +98,56 @@ export const products = pgTable("products", {
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const inventory = pgTable("inventory", {
-	id: uuid("id").primaryKey().defaultRandom(),
-	productId: uuid("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
-	currentStock: integer("current_stock").notNull().default(0),
-	unit: text("unit").notNull(), // e.g., grams, pieces, liters
-	supplier: text("supplier"),
-	status: inventoryStatusEnum("status").notNull().default("in_stock"),
-	lastRestocked: timestamp("last_restocked"),
-});
+export const inventory = pgTable(
+	"inventory",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		productId: uuid("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
+		currentStock: integer("current_stock").notNull().default(0),
+		unit: text("unit").notNull(), // e.g., grams, pieces, liters
+		supplier: text("supplier"),
+		status: inventoryStatusEnum("status").notNull().default("in_stock"),
+		lastRestocked: timestamp("last_restocked"),
+	},
+	(t) => [check("inventory_stock_non_negative", sql`${t.currentStock} >= 0`)]
+);
 
-export const transactions = pgTable("transactions", {
+export const transactions = pgTable(
+	"transactions",
+	{
 	id: uuid("id").primaryKey().defaultRandom(),
 	cashierId: uuid("cashier_id").notNull().references(() => user.id),
+	shiftId: uuid("shift_id").references(() => shifts.id),
+	subtotal: numeric("subtotal", { precision: 12, scale: 2 }).notNull().default("0"),
+	taxAmount: numeric("tax_amount", { precision: 12, scale: 2 }).notNull().default("0"),
+	discountAmount: numeric("discount_amount", { precision: 12, scale: 2 }).notNull().default("0"),
+	paidAmount: numeric("paid_amount", { precision: 12, scale: 2 }),
+	changeAmount: numeric("change_amount", { precision: 12, scale: 2 }),
 	totalAmount: numeric("total_amount", { precision: 12, scale: 2 }).notNull(),
 	paymentMethod: paymentMethodEnum("payment_method").notNull(),
 	status: transactionStatusEnum("status").notNull().default("completed"),
 	customerName: text("customer_name"),
 	tableNumber: text("table_number"),
 	createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+	},
+	(t) => [
+		index("transactions_created_at_idx").on(t.createdAt),
+		index("transactions_status_idx").on(t.status),
+		index("transactions_shift_id_idx").on(t.shiftId),
+	]
+);
 
-export const transactionItems = pgTable("transaction_items", {
-	id: uuid("id").primaryKey().defaultRandom(),
-	transactionId: uuid("transaction_id").notNull().references(() => transactions.id, { onDelete: "cascade" }),
-	productId: uuid("product_id").notNull().references(() => products.id),
-	quantity: integer("quantity").notNull(),
-	priceAtTime: numeric("price_at_time", { precision: 12, scale: 2 }).notNull(),
-});
+export const transactionItems = pgTable(
+	"transaction_items",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		transactionId: uuid("transaction_id").notNull().references(() => transactions.id, { onDelete: "cascade" }),
+		productId: uuid("product_id").notNull().references(() => products.id),
+		quantity: integer("quantity").notNull(),
+		priceAtTime: numeric("price_at_time", { precision: 12, scale: 2 }).notNull(),
+	},
+	(t) => [index("transaction_items_transaction_id_idx").on(t.transactionId)]
+);
 
 // Recipe Ingredients — maps a menu product to raw_material products
 export const recipeIngredients = pgTable("recipe_ingredients", {
@@ -113,6 +163,12 @@ export const recipeIngredients = pgTable("recipe_ingredients", {
 export const userRelations = relations(user, ({ many }) => ({
 	sessions: many(session),
 	accounts: many(account),
+	transactions: many(transactions),
+	shifts: many(shifts),
+}));
+
+export const shiftRelations = relations(shifts, ({ one, many }) => ({
+	cashier: one(user, { fields: [shifts.openedBy], references: [user.id] }),
 	transactions: many(transactions),
 }));
 
@@ -141,6 +197,7 @@ export const inventoryRelations = relations(inventory, ({ one }) => ({
 
 export const transactionsRelations = relations(transactions, ({ one, many }) => ({
 	cashier: one(user, { fields: [transactions.cashierId], references: [user.id] }),
+	shift: one(shifts, { fields: [transactions.shiftId], references: [shifts.id] }),
 	items: many(transactionItems),
 }));
 

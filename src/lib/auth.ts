@@ -26,10 +26,12 @@ export const auth = betterAuth({
 	},
 	user: {
 		additionalFields: {
+			// Role is managed server-side only: new accounts always start as barista
+			// and can be promoted by an admin from the Settings page.
 			role: {
 				type: "string",
 				defaultValue: "barista",
-				input: true,
+				input: false,
 			},
 		},
 	},
