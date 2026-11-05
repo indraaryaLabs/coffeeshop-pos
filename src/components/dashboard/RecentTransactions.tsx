@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { SlidersHorizontal, FileDown, X } from "lucide-react";
-import { formatIDR } from "@/lib/format";
+import { formatIDR, shortId } from "@/lib/format";
 import type { RecentTxRow } from "@/components/dashboard/types";
 
 interface RecentTransactionsProps {
@@ -59,7 +59,7 @@ export function RecentTransactions({ transactions = [] }: RecentTransactionsProp
 
     const headers = ["ID", "Pelanggan", "Metode", "Status", "Total", "Tanggal"];
     const rows = filteredTx.map((tx) => [
-      tx.id.substring(0, 8).toUpperCase(),
+      shortId(tx.id),
       tx.customerName || "Guest",
       PAYMENT_LABEL[tx.paymentMethod] || tx.paymentMethod,
       STATUS_LABEL[tx.status] || tx.status,
@@ -220,7 +220,7 @@ export function RecentTransactions({ transactions = [] }: RecentTransactionsProp
                   className="hover:bg-secondary/20 transition-colors group border-b-secondary"
                 >
                   <TableCell className="px-6 sm:px-8 py-5 text-sm font-medium text-foreground font-mono">
-                    {tx.id.substring(0, 8).toUpperCase()}
+                    {shortId(tx.id)}
                   </TableCell>
                   <TableCell className="px-6 sm:px-8 py-5 text-sm font-semibold text-foreground">
                     {tx.customerName || "Guest"}

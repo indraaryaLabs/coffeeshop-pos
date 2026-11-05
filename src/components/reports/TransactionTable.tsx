@@ -23,7 +23,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { voidTransaction } from "@/lib/actions/transaction";
-import { formatIDR } from "@/lib/format";
+import { formatIDR, shortId } from "@/lib/format";
 import type { ReportTransaction } from "@/components/reports/types";
 
 interface TransactionTableProps {
@@ -55,7 +55,7 @@ export function TransactionTable({ searchQuery = "", items = [], isAdmin = false
     setIsVoiding(false);
     if (res.success) {
       toast.success("Transaksi dibatalkan", {
-        description: `#${voidTarget.id.substring(0, 8).toUpperCase()} — stok dikembalikan ke inventory.`,
+        description: `#${shortId(voidTarget.id)} — stok dikembalikan ke inventory.`,
       });
       setVoidTarget(null);
     } else {
@@ -109,7 +109,7 @@ export function TransactionTable({ searchQuery = "", items = [], isAdmin = false
                   <TableRow key={tx.id} className="hover:bg-secondary/20 transition-colors">
                     <TableCell className="px-6 sm:px-8 py-5">
                       <span className="font-mono text-xs font-bold text-muted-foreground">
-                        #{tx.id.substring(0, 8).toUpperCase()}
+                        #{shortId(tx.id)}
                       </span>
                     </TableCell>
                     <TableCell className="px-6 sm:px-8 py-5">
@@ -188,7 +188,7 @@ export function TransactionTable({ searchQuery = "", items = [], isAdmin = false
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
             <DialogTitle>
-              Batalkan Transaksi #{voidTarget?.id.substring(0, 8).toUpperCase()}?
+              Batalkan Transaksi #{voidTarget ? shortId(voidTarget.id) : ""}?
             </DialogTitle>
             <DialogDescription>
               Transaksi senilai {voidTarget ? formatIDR(voidTarget.total) : ""} akan ditandai batal dan

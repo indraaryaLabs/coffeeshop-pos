@@ -19,3 +19,12 @@ export function formatCompactIDR(value: number): string {
 export function roundMoney(value: number): number {
 	return Math.round(value * 100) / 100;
 }
+
+/**
+ * Short, human-friendly transaction reference shown on receipts and tables.
+ * Uses the trailing characters of the UUID so references stay distinct even
+ * when many ids share a prefix (e.g. synthetic seed data).
+ */
+export function shortId(id: string): string {
+	return id.slice(-8).toUpperCase();
+}

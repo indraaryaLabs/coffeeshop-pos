@@ -1,7 +1,7 @@
 import React, { forwardRef } from "react";
 import type { CartItem } from "@/hooks/use-cart";
 import type { PaymentMethod } from "@/lib/catalog";
-import { formatIDR } from "@/lib/format";
+import { formatIDR, shortId } from "@/lib/format";
 import type { ShopProfile } from "./POSClient";
 
 interface ThermalReceiptProps {
@@ -72,7 +72,7 @@ export const ThermalReceipt = forwardRef<HTMLDivElement, ThermalReceiptProps>(fu
           {transactionId && (
             <div className="flex justify-between">
               <span>ID Transaksi</span>
-              <span>{transactionId.substring(0, 8).toUpperCase()}</span>
+              <span>{transactionId ? shortId(transactionId) : String(orderNumber).padStart(3, "0")}</span>
             </div>
           )}
           <div className="flex justify-between">

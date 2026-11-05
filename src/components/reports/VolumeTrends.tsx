@@ -46,7 +46,7 @@ export function VolumeTrends({ data = [] }: VolumeTrendsProps) {
             <p className="text-xs">Data volume akan tampil setelah ada transaksi</p>
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height="100%" minHeight={160}>
+          <ResponsiveContainer width="100%" height={180}>
             <BarChart data={displayData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
               <XAxis
                 dataKey="day"

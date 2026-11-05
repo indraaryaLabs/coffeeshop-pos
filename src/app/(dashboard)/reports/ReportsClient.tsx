@@ -12,6 +12,7 @@ import { VolumeTrends } from "@/components/reports/VolumeTrends";
 import { PopularCategory } from "@/components/reports/PopularCategory";
 import { Button } from "@/components/ui/button";
 import { useReactToPrint } from "react-to-print";
+import { shortId } from "@/lib/format";
 import type { ReportTransaction, VolumePoint, CategoryShare } from "@/components/reports/types";
 
 interface ReportsClientProps {
@@ -96,7 +97,7 @@ export function ReportsClient({
     try {
       const headers = ["ID", "Tanggal", "Waktu", "Pelanggan", "Kasir", "Metode", "Total", "Status"];
       const rows = filteredTransactions.map((tx) => [
-        tx.id.substring(0, 8).toUpperCase(),
+        shortId(tx.id),
         `"${tx.date}"`,
         `"${tx.time}"`,
         `"${tx.customer}"`,
