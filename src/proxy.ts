@@ -4,7 +4,6 @@ import { headers } from "next/headers";
 
 export async function proxy(request: NextRequest) {
 	const { pathname } = request.nextUrl;
-	console.log("Proxy intercepted:", pathname);
 
 	const isAuthPage = pathname === "/login" || pathname === "/signup";
 	

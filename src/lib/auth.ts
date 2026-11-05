@@ -14,7 +14,7 @@ export const auth = betterAuth({
 		},
 	}),
 	logger: {
-		level: "debug",
+		level: "error",
 	},
 	emailAndPassword: {
 		enabled: true,

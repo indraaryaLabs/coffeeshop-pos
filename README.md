@@ -27,13 +27,14 @@ Most "POS clone" projects stop at cart + checkout. The part I wanted to get righ
 
 ```bash
 npm install
-cp .env.example .env   # set DIRECT_URL (Postgres) and Supabase keys
-npm run db:push        # or: npx drizzle-kit push
-npx tsx scripts/seed.ts  # optional: load synthetic demo data
+cp .env.example .env   # fill in DATABASE_URL, DIRECT_URL and the Supabase keys
+npm run db:push        # push the Drizzle schema to your database
+npm run create-admin   # optional: create an admin account (ADMIN_EMAIL / ADMIN_PASSWORD from .env)
+npm run db:seed        # optional: load synthetic demo data
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Sign up to create the first account, then switch its role to `admin` in the database if you need inventory/report access.
+Open [http://localhost:3000](http://localhost:3000) and log in with the admin credentials from `.env`. Barista accounts can be created from the signup page. In production, `NEXT_PUBLIC_APP_URL` must match the deployed origin.
 
 ## Project structure
 
@@ -42,5 +43,6 @@ src/app/(auth)/        # login, signup
 src/app/(dashboard)/   # POS, inventory, reports, settings
 src/lib/db/schema.ts   # Drizzle schema: products, inventory, recipes, transactions
 src/lib/actions/       # server actions for inventory, products, transactions
-scripts/                # seed + synthetic data for local demos
+scripts/               # seed + synthetic data + admin creation for local demos
+.env.example           # environment variable reference (copy to .env)
 ```

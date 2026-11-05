@@ -1,11 +1,10 @@
 import { defineConfig } from "drizzle-kit";
 import * as dotenv from "dotenv";
 
-// Membaca file .env yang baru saja kita ubah namanya
 dotenv.config({ path: ".env" });
 
 export default defineConfig({
-	schema: "./src/lib/db/*", // <-- Ini kuncinya! Memberitahu Drizzle di mana file skemanya berada
+	schema: "./src/lib/db/schema.ts",
 	out: "./drizzle",
 	dialect: "postgresql",
 	dbCredentials: {
