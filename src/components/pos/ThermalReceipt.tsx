@@ -14,8 +14,7 @@ interface ThermalReceiptProps {
   paymentMethod?: string;
 }
 
-export const ThermalReceipt = forwardRef<HTMLDivElement, ThermalReceiptProps>(({
-  items,
+export const ThermalReceipt = forwardRef<HTMLDivElement, ThermalReceiptProps>(function ThermalReceipt({  items,
   subtotal,
   tax,
   total,
@@ -25,7 +24,7 @@ export const ThermalReceipt = forwardRef<HTMLDivElement, ThermalReceiptProps>(({
   customerName = "Guest",
   tableNumber,
   paymentMethod = "CASH",
-}, ref) => {
+}, ref) {
   const date = new Date().toLocaleString("en-US", {
     dateStyle: "short",
     timeStyle: "short",

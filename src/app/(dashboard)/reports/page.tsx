@@ -1,7 +1,7 @@
 import { ReportsClient } from "./ReportsClient";
 import { db } from "@/lib/db";
 import { transactions } from "@/lib/db/schema";
-import { sql, desc, eq, gte, sum, count } from "drizzle-orm";
+import { sql, desc, eq } from "drizzle-orm";
 import { user, transactionItems, products } from "@/lib/db/schema";
 
 export default async function ReportsPage() {
@@ -40,7 +40,7 @@ export default async function ReportsPage() {
 
   const recentTxs = dbTransactions.filter((tx) => tx.createdAt >= sevenDaysAgo);
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const volumeMap = new Map();
+  const volumeMap = new Map<string, { revenue: number; orders: number }>();
   
   // Initialize last 7 days
   for (let i = 6; i >= 0; i--) {

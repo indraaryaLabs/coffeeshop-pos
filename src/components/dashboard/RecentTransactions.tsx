@@ -13,9 +13,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
+import type { RecentTxRow } from "@/components/dashboard/types";
 
 interface RecentTransactionsProps {
-  transactions?: any[];
+  transactions?: RecentTxRow[];
 }
 
 type FilterStatus = "all" | "completed" | "pending" | "cancelled";

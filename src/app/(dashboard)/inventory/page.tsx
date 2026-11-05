@@ -24,16 +24,13 @@ export default async function InventoryPage() {
     ...item,
     unit: "Items",
     status:
-      item.currentStock <= 0
+      (item.currentStock <= 0
         ? "out_of_stock"
         : item.currentStock <= 5
         ? "low_stock"
-        : "in_stock",
+        : "in_stock") as "in_stock" | "low_stock" | "out_of_stock",
     pricePerUnit: `$${Number(item.pricePerUnit).toFixed(2)}`,
   }));
 
-  // Also fetch raw materials list for recipe selector in POS
-  const rawMaterials = initialItems.filter((i) => i.productType === "raw_material");
-
-  return <InventoryClient initialItems={initialItems} rawMaterials={rawMaterials} />;
+  return <InventoryClient initialItems={initialItems} />;
 }

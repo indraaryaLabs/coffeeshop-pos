@@ -11,9 +11,10 @@ import {
 } from "recharts";
 import { weeklyRevenue } from "@/lib/data/transactions";
 import { useTheme } from "next-themes";
+import type { VolumePoint } from "@/components/reports/types";
 
 interface VolumeTrendsProps {
-  data?: any[];
+  data?: VolumePoint[];
 }
 
 export function VolumeTrends({ data = [] }: VolumeTrendsProps) {

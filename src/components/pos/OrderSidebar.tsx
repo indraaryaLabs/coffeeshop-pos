@@ -97,7 +97,7 @@ export function OrderSidebar() {
       } else {
         toast.error(res.error || "Checkout failed");
       }
-    } catch (e: any) {
+    } catch {
       toast.error("Network error during checkout");
     } finally {
       setIsCheckingOut(false);

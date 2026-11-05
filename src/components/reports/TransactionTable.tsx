@@ -2,10 +2,8 @@
 
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { transactions } from "@/lib/data/transactions";
 import {
-  Table,
-  TableBody,
+  Table,  TableBody,
   TableCell,
   TableHead,
   TableHeader,
@@ -14,9 +12,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
+import type { ReportTransaction } from "@/components/reports/types";
+
 interface TransactionTableProps {
   searchQuery?: string;
-  items?: any[];
+  items?: ReportTransaction[];
 }
 
 export function TransactionTable({ searchQuery = "", items = [] }: TransactionTableProps) {

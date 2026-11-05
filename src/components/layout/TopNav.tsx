@@ -36,7 +36,7 @@ export function TopNav({
   const { data: session } = authClient.useSession();
   const user = session?.user;
   const userName = user?.name || "User";
-  const userRole = (user as any)?.role || "barista";
+  const userRole = user?.role ?? "barista";
 
   const handleLogout = async () => {
     await authClient.signOut({

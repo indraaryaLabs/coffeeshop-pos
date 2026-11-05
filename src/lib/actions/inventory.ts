@@ -29,9 +29,9 @@ export async function restockProduct(productId: string, quantity: number) {
 
     revalidatePath("/", "layout");
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Restock error:", error);
-    return { success: false, error: error.message || "Failed to restock." };
+    return { success: false, error: error instanceof Error ? error.message : "Failed to restock." };
   }
 }
 
@@ -59,9 +59,9 @@ export async function deleteProduct(productId: string) {
 
     revalidatePath("/", "layout");
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Delete error:", error);
-    return { success: false, error: error.message || "Failed to delete product." };
+    return { success: false, error: error instanceof Error ? error.message : "Failed to delete product." };
   }
 }
 
@@ -110,7 +110,7 @@ export async function updateInventoryItem(
 
     revalidatePath("/", "layout");
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Update error:", error);
     return { success: false, error: "Failed to update item." };
   }

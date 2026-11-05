@@ -32,9 +32,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+export type InventoryRow = {
+  id: string;
+  name: string;
+  subtitle: string;
+  unit: string;
+  status: "in_stock" | "low_stock" | "out_of_stock";
+  currentStock: number;
+  pricePerUnit: string;
+  supplier?: string | null;
+  image?: string | null;
+  productType: "menu" | "retail" | "raw_material";
+};
+
 interface InventoryTableProps {
   searchQuery?: string;
-  items?: any[];
+  items?: InventoryRow[];
 }
 
 export function InventoryTable({ searchQuery = "", items = [] }: InventoryTableProps) {
@@ -42,7 +55,7 @@ export function InventoryTable({ searchQuery = "", items = [] }: InventoryTableP
   const [deletingId, setDeletingId] = useState<string | null>(null);
   
   // Edit Dialog State
-  const [editingItem, setEditingItem] = useState<any>(null);
+  const [editingItem, setEditingItem] = useState<InventoryRow | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
@@ -77,7 +90,7 @@ export function InventoryTable({ searchQuery = "", items = [] }: InventoryTableP
     }
   };
 
-  const handleEditClick = (item: any) => {
+  const handleEditClick = (item: InventoryRow) => {
     // Strip $ from price and construct initial state
     const priceRaw = String(item.pricePerUnit).replace(/[^0-9.]/g, "");
     setEditForm({
@@ -287,7 +300,9 @@ export function InventoryTable({ searchQuery = "", items = [] }: InventoryTableP
               <label className="text-sm font-bold">Item Type</label>
               <Select
                 value={editForm.type}
-                onValueChange={(val: any) => setEditForm({ ...editForm, type: val })}
+                onValueChange={(val) => {
+                  if (val !== null) setEditForm({ ...editForm, type: val });
+                }}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue />

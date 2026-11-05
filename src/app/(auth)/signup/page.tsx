@@ -25,7 +25,7 @@ export default function SignupPage() {
 
     setIsLoading(true);
 
-    const { data, error } = await authClient.signUp.email({
+    await authClient.signUp.email({
       email,
       password,
       name,
@@ -37,9 +37,7 @@ export default function SignupPage() {
         router.push("/");
       },
       onError: (ctx) => {
-        console.error("Signup Error Context:", ctx);
-        console.error("Signup Error Details:", ctx.error);
-        toast.error(ctx.error.message || "Failed to create account. Please check the console for details.");
+        toast.error(ctx.error.message || "Failed to create account. Please try again.");
         setIsLoading(false);
       }
     });

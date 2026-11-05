@@ -3,11 +3,20 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
+
+const emptySubscribe = () => () => {};
+function useIsMounted() {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+}
 
 const navItems = [
   { label: "Dashboard", icon: "dashboard", href: "/" },
@@ -22,14 +31,12 @@ export function Sidebar() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { data: session } = authClient.useSession();
-  const [mounted, setMounted] = useState(false);
   const [imgError, setImgError] = useState(false);
-
-  useEffect(() => setMounted(true), []);
+  const mounted = useIsMounted();
 
   const user = session?.user;
   const userName = user?.name || "User";
-  const userRole = (user as any)?.role || "barista";
+  const userRole = user?.role ?? "barista";
   const userImage = user?.image;
   const userInitials = userName
     .split(" ")

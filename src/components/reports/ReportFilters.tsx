@@ -36,7 +36,12 @@ export function ReportFilters({
         <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 ml-1">
           Date Range
         </label>
-        <Select value={dateRange} onValueChange={onDateRangeChange}>
+        <Select
+          value={dateRange}
+          onValueChange={(value) => {
+            if (value !== null) onDateRangeChange(value);
+          }}
+        >
           <SelectTrigger className="bg-card rounded-xl border-border h-11">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-muted-foreground text-lg">
@@ -59,7 +64,12 @@ export function ReportFilters({
         <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 ml-1">
           Payment Method
         </label>
-        <Select value={paymentMethod} onValueChange={onPaymentMethodChange}>
+        <Select
+          value={paymentMethod}
+          onValueChange={(value) => {
+            if (value !== null) onPaymentMethodChange(value);
+          }}
+        >
           <SelectTrigger className="bg-card rounded-xl border-border h-11">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-muted-foreground text-lg">

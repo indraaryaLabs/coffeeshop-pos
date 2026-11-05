@@ -23,7 +23,7 @@ export default function LoginPage() {
 
     setIsLoading(true);
 
-    const { data, error } = await authClient.signIn.email({
+    await authClient.signIn.email({
       email,
       password,
       callbackURL: "/",
@@ -153,7 +153,7 @@ export default function LoginPage() {
 
           <div className="text-center space-y-2">
             <p className="text-sm text-muted-foreground">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link href="/signup" className="font-bold text-primary hover:underline">
                 Sign Up
               </Link>

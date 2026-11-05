@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import type { CategoryShare } from "@/components/reports/types";
 
 interface PopularCategoryProps {
-  data?: any[];
+  data?: CategoryShare[];
 }
 
 export function PopularCategory({ data = [] }: PopularCategoryProps) {

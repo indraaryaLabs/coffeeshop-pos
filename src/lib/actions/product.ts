@@ -4,9 +4,11 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
-import { products, inventory, recipeIngredients } from "@/lib/db/schema";
+import { products, inventory, recipeIngredients, productTypeEnum } from "@/lib/db/schema";
 import { createClient } from "@supabase/supabase-js";
 import { eq } from "drizzle-orm";
+
+type ProductType = (typeof productTypeEnum.enumValues)[number];
 
 // Helper function to lazily initialize Supabase Storage
 function getSupabase() {
@@ -63,7 +65,7 @@ export async function createProduct(formData: FormData) {
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
         const filePath = `products/${fileName}`;
 
-        const { data, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('product-images')
           .upload(filePath, imageFile, {
             cacheControl: '3600',
@@ -80,7 +82,7 @@ export async function createProduct(formData: FormData) {
           .getPublicUrl(filePath);
 
         imageUrl = publicUrlData.publicUrl;
-      } catch (storageError: any) {
+      } catch (storageError) {
         console.error("Supabase configuration problem", storageError);
         return { success: false, error: "Please configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your .env file to enable image uploads." };
       }
@@ -92,7 +94,7 @@ export async function createProduct(formData: FormData) {
       const [newProduct] = await tx.insert(products).values({
         name,
         category,
-        type: productType as any,
+        type: productType as ProductType,
         price: price.toString(),
         description: description || null,
         imageUrl,
@@ -127,9 +129,9 @@ export async function createProduct(formData: FormData) {
     revalidatePath('/', 'layout');
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to create product:", error);
-    return { success: false, error: error.message || "Failed to create product" };
+    return { success: false, error: error instanceof Error ? error.message : "Failed to create product" };
   }
 }
 
@@ -156,12 +158,12 @@ export async function editProduct(formData: FormData) {
 
     const price = parseFloat(priceStr);
     
-    let updatePayload: any = {
+    const updatePayload: Partial<typeof products.$inferInsert> = {
       name,
       description: description || null,
       category,
       price: price.toString(),
-      type: productType as any,
+      type: productType as ProductType,
     };
 
     // Handle Image Upload if a new file is provided
@@ -172,7 +174,7 @@ export async function editProduct(formData: FormData) {
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
         const filePath = `products/${fileName}`;
 
-        const { data, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('product-images')
           .upload(filePath, imageFile, {
             cacheControl: '3600',
@@ -189,7 +191,7 @@ export async function editProduct(formData: FormData) {
           .getPublicUrl(filePath);
 
         updatePayload.imageUrl = publicUrlData.publicUrl;
-      } catch (storageError: any) {
+      } catch (storageError) {
         console.error("Supabase configuration problem", storageError);
         return { success: false, error: "Storage error occurred during edit." };
       }
@@ -215,8 +217,8 @@ export async function editProduct(formData: FormData) {
 
     revalidatePath('/', 'layout');
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to edit product:", error);
-    return { success: false, error: error.message || "Failed to edit product." };
+    return { success: false, error: error instanceof Error ? error.message : "Failed to edit product." };
   }
 }

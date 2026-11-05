@@ -130,7 +130,7 @@ export async function processCheckout(payload: CheckoutPayload) {
       success: true,
       transactionId: transactionRecord.id,
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Critical Backend Tx Error:", error);
     return {
       success: false,

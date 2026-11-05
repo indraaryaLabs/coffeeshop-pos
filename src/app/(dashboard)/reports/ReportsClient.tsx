@@ -11,14 +11,15 @@ import { VolumeTrends } from "@/components/reports/VolumeTrends";
 import { PopularCategory } from "@/components/reports/PopularCategory";
 import { Button } from "@/components/ui/button";
 import { useReactToPrint } from "react-to-print";
+import type { ReportTransaction, VolumePoint, CategoryShare } from "@/components/reports/types";
 
 interface ReportsClientProps {
   totalRevenue: number;
   totalOrders: number;
   avgTicket: number;
-  transactions: any[];
-  volumeData: any[];
-  categoryData: any[];
+  transactions: ReportTransaction[];
+  volumeData: VolumePoint[];
+  categoryData: CategoryShare[];
 }
 
 export function ReportsClient({ totalRevenue, totalOrders, avgTicket, transactions, volumeData, categoryData }: ReportsClientProps) {
@@ -41,7 +42,7 @@ export function ReportsClient({ totalRevenue, totalOrders, avgTicket, transactio
     // Date range filter
     if (appliedDateRange !== "all") {
       const now = new Date();
-      let cutoff = new Date();
+      const cutoff = new Date();
       if (appliedDateRange === "today") {
         cutoff.setHours(0, 0, 0, 0);
       } else if (appliedDateRange === "7days") {
@@ -67,7 +68,7 @@ export function ReportsClient({ totalRevenue, totalOrders, avgTicket, transactio
   }, [transactions, appliedDateRange, appliedPaymentMethod]);
 
   // Recalculate metrics based on filtered data
-  const filteredRevenue = filteredTransactions.reduce((sum: number, tx: any) => sum + tx.total, 0);
+  const filteredRevenue = filteredTransactions.reduce((sum: number, tx) => sum + tx.total, 0);
   const filteredOrders = filteredTransactions.length;
   const filteredAvgTicket = filteredOrders > 0 ? filteredRevenue / filteredOrders : 0;
 
@@ -86,7 +87,7 @@ export function ReportsClient({ totalRevenue, totalOrders, avgTicket, transactio
     toast("Generating CSV...", { description: "Preparing your download." });
     try {
       const headers = ["ID", "Date", "Time", "Customer", "Cashier", "Payment Method", "Amount", "Status"];
-      const rows = filteredTransactions.map((tx: any) => [
+      const rows = filteredTransactions.map((tx) => [
         tx.id,
         `"${tx.date}"`,
         `"${tx.time}"`,
@@ -108,7 +109,7 @@ export function ReportsClient({ totalRevenue, totalOrders, avgTicket, transactio
       link.click();
       document.body.removeChild(link);
       toast.success("CSV Downloaded successfully.");
-    } catch (error) {
+    } catch {
       toast.error("Failed to generate CSV.");
     }
   };

@@ -1,4 +1,4 @@
-import { eq, inArray, sql } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { products, inventory, recipeIngredients } from "@/lib/db/schema";
 import { POSClient } from "@/components/pos/POSClient";

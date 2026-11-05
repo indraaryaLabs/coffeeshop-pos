@@ -8,6 +8,7 @@ import { TopSellers } from "@/components/dashboard/TopSellers";
 import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import type { RecentTxRow } from "@/components/dashboard/types";
 
 interface LowStockItem {
   productId: string;
@@ -36,7 +37,7 @@ interface DashboardClientProps {
   itemsSold: number;
   lowStockCount: number;
   lowStockItems: LowStockItem[];
-  recentTx: any[];
+  recentTx: RecentTxRow[];
   topSellers: TopSellerItem[];
   weeklyPerformance: WeeklyDataPoint[];
 }

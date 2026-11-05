@@ -1,18 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 
+const emptySubscribe = () => () => {};
+function useIsMounted() {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+}
+
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { data: session, isPending } = authClient.useSession();
   const router = useRouter();
-  const [isMounted, setIsMounted] = useState(false);
+  const isMounted = useIsMounted();
 
   useEffect(() => {
-    setIsMounted(true);
     if (!isPending && !session) {
       router.push("/login");
     }

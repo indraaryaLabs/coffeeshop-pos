@@ -25,13 +25,13 @@ import {
 } from "@/components/ui/select";
 import { createProduct } from "@/lib/actions/product";
 import { restockProduct } from "@/lib/actions/inventory";
+import { type InventoryRow } from "@/components/inventory/InventoryTable";
 
 interface InventoryClientProps {
-  initialItems: any[];
-  rawMaterials: any[];
+  initialItems: InventoryRow[];
 }
 
-export function InventoryClient({ initialItems, rawMaterials }: InventoryClientProps) {
+export function InventoryClient({ initialItems }: InventoryClientProps) {
   const [activeTab, setActiveTab] = useState<"retail" | "raw_material">("retail");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -63,7 +63,7 @@ export function InventoryClient({ initialItems, rawMaterials }: InventoryClientP
   const lowStockCount = initialItems.filter(
     (i) => i.status === "low_stock" || i.status === "out_of_stock"
   ).length;
-  const totalValue = initialItems.reduce((acc: number, item: any) => {
+  const totalValue = initialItems.reduce((acc: number, item: InventoryRow) => {
     const priceStr = String(item.pricePerUnit || "0").replace(/[^0-9.]/g, "");
     const price = parseFloat(priceStr) || 0;
     return acc + price * (item.currentStock || 0);
@@ -179,7 +179,9 @@ export function InventoryClient({ initialItems, rawMaterials }: InventoryClientP
                       <label className="text-sm font-bold">Select Item</label>
                       <Select
                         value={restockForm.id}
-                        onValueChange={(val) => setRestockForm({ ...restockForm, id: val })}
+                        onValueChange={(val) => {
+                          if (val !== null) setRestockForm({ ...restockForm, id: val });
+                        }}
                       >
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select an inventory item..." />
@@ -228,7 +230,9 @@ export function InventoryClient({ initialItems, rawMaterials }: InventoryClientP
                       <label className="text-sm font-bold">Item Type</label>
                       <Select
                         value={form.type}
-                        onValueChange={(val: any) => setForm({ ...form, type: val })}
+                        onValueChange={(val) => {
+                          if (val !== null) setForm({ ...form, type: val });
+                        }}
                       >
                         <SelectTrigger className="w-full">
                           <SelectValue />

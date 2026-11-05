@@ -25,9 +25,9 @@ export async function updateProductDescription(productId: string, description: s
 
     revalidatePath("/", "layout");
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Update description error:", error);
-    return { success: false, error: error.message || "Failed to update description." };
+    return { success: false, error: error instanceof Error ? error.message : "Failed to update description." };
   }
 }
 
@@ -45,7 +45,7 @@ export async function updateProductDetails(
       return { success: false, error: "Product ID is required." };
     }
 
-    const updateData: Record<string, any> = {};
+    const updateData: Partial<typeof products.$inferInsert> = {};
     if (data.name) updateData.name = data.name;
     if (data.description !== undefined) updateData.description = data.description;
     if (data.price !== undefined) updateData.price = data.price.toString();
@@ -61,8 +61,8 @@ export async function updateProductDetails(
 
     revalidatePath("/", "layout");
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Update product error:", error);
-    return { success: false, error: error.message || "Failed to update product." };
+    return { success: false, error: error instanceof Error ? error.message : "Failed to update product." };
   }
 }
