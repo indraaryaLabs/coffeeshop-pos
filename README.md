@@ -1,5 +1,14 @@
 # Coffee Shop POS
 
+![Next.js](https://img.shields.io/badge/Next.js%2016-black?style=flat-square&logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React%2019-61DAFB?style=flat-square&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS%204-38BDF8?style=flat-square&logo=tailwindcss&logoColor=white)
+![Drizzle ORM](https://img.shields.io/badge/Drizzle%20ORM-C5F74F?style=flat-square&logo=drizzle&logoColor=black)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=flat-square&logo=supabase&logoColor=white)
+![Better Auth](https://img.shields.io/badge/Better%20Auth-000000?style=flat-square&logo=auth0&logoColor=white)
+
 A point-of-sale and inventory system for a coffee shop, built to handle the whole flow from cashier checkout to stock tracking — not just a checkout screen bolted onto a database.
 
 ## Why this exists
