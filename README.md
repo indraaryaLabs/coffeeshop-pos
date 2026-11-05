@@ -1,6 +1,6 @@
 # Coffee Shop POS
 
-![CI](https://github.com/indraaryaLabs/coffee-shop-pos/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/indraaryaLabs/coffeeshop-pos/actions/workflows/ci.yml/badge.svg)
 ![Next.js](https://img.shields.io/badge/Next.js%2016-black?style=flat-square&logo=nextdotjs&logoColor=white)
 ![React](https://img.shields.io/badge/React%2019-61DAFB?style=flat-square&logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
