@@ -10,7 +10,6 @@ export interface ReportTransaction {
   total: number;
   status: string;
 }
-
 export interface VolumePoint {
   day: string;
   revenue?: number;

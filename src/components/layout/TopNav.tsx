@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Search, Bell, Settings, LogOut, UserCircle2 } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -27,7 +28,7 @@ interface TopNavProps {
 export function TopNav({
   title,
   subtitle,
-  searchPlaceholder = "Search transactions...",
+  searchPlaceholder = "Cari transaksi...",
   searchQuery,
   onSearchChange,
   children,
@@ -42,13 +43,13 @@ export function TopNav({
     await authClient.signOut({
       fetchOptions: {
         onSuccess: () => {
-          toast.success("Logged out successfully");
+          toast.success("Berhasil keluar");
           router.push("/login");
         },
         onError: (ctx) => {
-          toast.error(ctx.error.message || "Failed to logout");
-        }
-      }
+          toast.error(ctx.error.message || "Gagal keluar");
+        },
+      },
     });
   };
 
@@ -56,9 +57,7 @@ export function TopNav({
     <header className="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 bg-background/80 backdrop-blur-md z-40 px-8 flex items-center justify-between border-b border-border/50">
       <div className="flex items-center gap-6 flex-1">
         <div className="relative group max-w-md w-full">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 text-xl">
-            search
-          </span>
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
           <Input
             type="text"
             placeholder={searchPlaceholder}
@@ -82,34 +81,41 @@ export function TopNav({
       </div>
       <div className="flex items-center gap-2">
         {children}
-        <button className="text-muted-foreground hover:bg-primary/10 rounded-full p-2 transition-all relative">
-          <span className="material-symbols-outlined">notifications</span>
+        <button
+          className="text-muted-foreground hover:bg-primary/10 rounded-full p-2 transition-all relative"
+          aria-label="Notifikasi"
+        >
+          <Bell className="w-5 h-5" />
           <span className="absolute top-2 right-2 w-2 h-2 bg-accent rounded-full border-2 border-background" />
         </button>
 
         <DropdownMenu>
-          <DropdownMenuTrigger render={
-            <button className="text-muted-foreground hover:bg-primary/10 rounded-full p-2 transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary" />
-          }>
-            <span className="material-symbols-outlined">account_circle</span>
+          <DropdownMenuTrigger
+            render={
+              <button className="text-muted-foreground hover:bg-primary/10 rounded-full p-2 transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary" />
+            }
+          >
+            <UserCircle2 className="w-6 h-6" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56 font-headline bg-popover border border-border shadow-xl rounded-xl">
             <DropdownMenuGroup>
               <DropdownMenuLabel className="font-bold flex flex-col">
                 <span className="text-foreground">{userName}</span>
-                <span className="text-[10px] text-muted-foreground uppercase tracking-widest leading-tight">{userRole}</span>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-widest leading-tight">
+                  {userRole === "admin" ? "Administrator" : "Barista"}
+                </span>
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-border/50" />
               <DropdownMenuItem className="cursor-pointer gap-3 font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg">
-                <span className="material-symbols-outlined text-[18px]">settings</span>
-                Account Settings
+                <Settings className="w-4 h-4" />
+                Pengaturan Akun
               </DropdownMenuItem>
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={handleLogout}
                 className="cursor-pointer gap-3 font-semibold text-destructive focus:text-destructive focus:bg-destructive/10 hover:text-destructive hover:bg-destructive/10 rounded-lg mt-1"
               >
-                <span className="material-symbols-outlined text-[18px]">logout</span>
-                Log out
+                <LogOut className="w-4 h-4" />
+                Keluar
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>

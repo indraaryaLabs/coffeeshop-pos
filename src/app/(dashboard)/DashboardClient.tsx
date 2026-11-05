@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
 import { TopNav } from "@/components/layout/TopNav";
 import { SummaryCards } from "@/components/dashboard/SummaryCards";
 import { WeeklyRevenueChart } from "@/components/dashboard/WeeklyRevenueChart";
 import { TopSellers } from "@/components/dashboard/TopSellers";
 import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
-import { toast } from "sonner";
 import { motion } from "framer-motion";
 import type { RecentTxRow } from "@/components/dashboard/types";
 
@@ -51,24 +49,14 @@ export function DashboardClient({
   topSellers,
   weeklyPerformance,
 }: DashboardClientProps) {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      toast("Dashboard Sync Active", {
-        description: "Data fetched securely from Supabase",
-        icon: <span className="material-symbols-outlined text-primary-foreground">check_circle</span>,
-        className: "bg-accent text-primary-foreground border-none shadow-2xl rounded-xl",
-      });
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
     <>
       <TopNav
-        title="Daily Overview"
-        subtitle={new Date().toLocaleDateString("en-US", {
-          month: "short",
+        title="Ringkasan Harian"
+        subtitle={new Date().toLocaleDateString("id-ID", {
+          weekday: "long",
           day: "numeric",
+          month: "long",
           year: "numeric",
         })}
       />

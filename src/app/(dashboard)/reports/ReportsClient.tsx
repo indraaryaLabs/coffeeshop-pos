@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { FileDown, FileText, Search } from "lucide-react";
 import { TopNav } from "@/components/layout/TopNav";
 import { ReportSummary } from "@/components/reports/ReportSummary";
 import { ReportFilters } from "@/components/reports/ReportFilters";
@@ -20,9 +21,18 @@ interface ReportsClientProps {
   transactions: ReportTransaction[];
   volumeData: VolumePoint[];
   categoryData: CategoryShare[];
+  isAdmin: boolean;
 }
 
-export function ReportsClient({ totalRevenue, totalOrders, avgTicket, transactions, volumeData, categoryData }: ReportsClientProps) {
+export function ReportsClient({
+  totalRevenue,
+  totalOrders,
+  avgTicket,
+  transactions,
+  volumeData,
+  categoryData,
+  isAdmin,
+}: ReportsClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [dateRange, setDateRange] = useState("all");
   const [paymentMethod, setPaymentMethod] = useState("all");
@@ -32,7 +42,9 @@ export function ReportsClient({ totalRevenue, totalOrders, avgTicket, transactio
   const handleApplyFilters = () => {
     setAppliedDateRange(dateRange);
     setAppliedPaymentMethod(paymentMethod);
-    toast.success("Filters applied!", { description: `Date: ${dateRange}, Payment: ${paymentMethod}` });
+    toast.success("Filter diterapkan", {
+      description: `Periode: ${dateRange}, Metode: ${paymentMethod}`,
+    });
   };
 
   // Filter transactions based on applied filters
@@ -52,11 +64,7 @@ export function ReportsClient({ totalRevenue, totalOrders, avgTicket, transactio
       } else if (appliedDateRange === "90days") {
         cutoff.setDate(now.getDate() - 90);
       }
-      filtered = filtered.filter((tx) => {
-        // Parse the date string back
-        const txDate = new Date(tx.rawDate);
-        return txDate >= cutoff;
-      });
+      filtered = filtered.filter((tx) => new Date(tx.rawDate) >= cutoff);
     }
 
     // Payment method filter
@@ -67,9 +75,10 @@ export function ReportsClient({ totalRevenue, totalOrders, avgTicket, transactio
     return filtered;
   }, [transactions, appliedDateRange, appliedPaymentMethod]);
 
-  // Recalculate metrics based on filtered data
-  const filteredRevenue = filteredTransactions.reduce((sum: number, tx) => sum + tx.total, 0);
-  const filteredOrders = filteredTransactions.length;
+  // Recalculate metrics based on filtered data (completed only)
+  const filteredCompleted = filteredTransactions.filter((tx) => tx.status !== "cancelled");
+  const filteredRevenue = filteredCompleted.reduce((sum: number, tx) => sum + tx.total, 0);
+  const filteredOrders = filteredCompleted.length;
   const filteredAvgTicket = filteredOrders > 0 ? filteredRevenue / filteredOrders : 0;
 
   const isFiltered = appliedDateRange !== "all" || appliedPaymentMethod !== "all";
@@ -78,75 +87,72 @@ export function ReportsClient({ totalRevenue, totalOrders, avgTicket, transactio
   const printRef = useRef(null);
   const handlePrint = useReactToPrint({
     contentRef: printRef,
-    documentTitle: "Atelier_Transaction_Report",
-    onAfterPrint: () => toast.success("PDF Export complete.")
+    documentTitle: "Laporan_Transaksi",
+    onAfterPrint: () => toast.success("Export PDF selesai"),
   });
 
   // CSV Export
   const handleExportCSV = () => {
-    toast("Generating CSV...", { description: "Preparing your download." });
     try {
-      const headers = ["ID", "Date", "Time", "Customer", "Cashier", "Payment Method", "Amount", "Status"];
+      const headers = ["ID", "Tanggal", "Waktu", "Pelanggan", "Kasir", "Metode", "Total", "Status"];
       const rows = filteredTransactions.map((tx) => [
-        tx.id,
+        tx.id.substring(0, 8).toUpperCase(),
         `"${tx.date}"`,
         `"${tx.time}"`,
         `"${tx.customer}"`,
         `"${tx.cashier}"`,
         tx.paymentMethod,
         tx.total.toFixed(2),
-        tx.status
+        tx.status,
       ]);
 
-      const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+      const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
       const link = document.createElement("a");
       const url = URL.createObjectURL(blob);
       link.setAttribute("href", url);
-      link.setAttribute("download", `Atelier_Export_${new Date().toISOString().split("T")[0]}.csv`);
+      link.setAttribute("download", `Laporan_Transaksi_${new Date().toISOString().split("T")[0]}.csv`);
       link.style.visibility = "hidden";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      toast.success("CSV Downloaded successfully.");
+      toast.success("CSV berhasil diunduh");
     } catch {
-      toast.error("Failed to generate CSV.");
+      toast.error("Gagal membuat CSV");
     }
   };
 
   return (
     <>
       <TopNav
-        searchPlaceholder="Search transactions by ID or customer..."
+        searchPlaceholder="Cari transaksi berdasarkan ID atau pelanggan..."
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
       />
-      <main className="pt-24 px-8 pb-12 font-sans min-h-screen">
+      <main className="pt-24 px-4 sm:px-8 pb-12 font-sans min-h-screen">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
             <p className="text-accent font-bold tracking-[0.2em] uppercase text-xs mb-2">
-              Performance Metrics
+              Ringkasan Kinerja
             </p>
-            <h2 className="font-headline text-5xl font-extrabold text-foreground tracking-tight">
-              Reports & History
+            <h2 className="font-headline text-4xl sm:text-5xl font-extrabold text-foreground tracking-tight">
+              Laporan & Riwayat
             </h2>
           </div>
           <div className="flex gap-3">
             <Button
               variant="outline"
               onClick={() => handlePrint()}
-              className="flex items-center gap-2 px-6 py-6 bg-card text-muted-foreground rounded-xl font-medium shadow-sm border border-border hover:bg-secondary transition-all active:scale-95"
+              className="flex items-center gap-2 px-5 h-11 bg-card text-muted-foreground rounded-xl font-medium shadow-sm border border-border hover:bg-secondary transition-all active:scale-95"
             >
-              <span className="material-symbols-outlined text-xl">
-                picture_as_pdf
-              </span>
+              <FileText className="w-4 h-4" />
               Export PDF
             </Button>
             <Button
-              className="flex items-center gap-2 px-6 py-6 bg-foreground text-background rounded-xl font-medium shadow-md hover:opacity-90 transition-all active:scale-95"
+              className="flex items-center gap-2 px-5 h-11 bg-foreground text-background rounded-xl font-medium shadow-md hover:opacity-90 transition-all active:scale-95"
               onClick={handleExportCSV}
             >
-              <span className="material-symbols-outlined text-xl">csv</span>
+              <FileDown className="w-4 h-4" />
               Download CSV
             </Button>
           </div>
@@ -167,7 +173,11 @@ export function ReportsClient({ totalRevenue, totalOrders, avgTicket, transactio
         />
 
         <div ref={printRef} className="print:p-8 print:bg-white print:text-black">
-          <TransactionTable searchQuery={searchQuery} items={filteredTransactions} />
+          <TransactionTable
+            searchQuery={searchQuery}
+            items={filteredTransactions}
+            isAdmin={isAdmin}
+          />
         </div>
 
         <motion.div
@@ -183,6 +193,11 @@ export function ReportsClient({ totalRevenue, totalOrders, avgTicket, transactio
             <PopularCategory data={categoryData} />
           </div>
         </motion.div>
+
+        <p className="mt-8 flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground">
+          <Search className="w-3.5 h-3.5" />
+          Data transaksi ditarik langsung dari database kasir — selalu terbaru.
+        </p>
       </main>
     </>
   );

@@ -8,6 +8,17 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
+import {
+  LayoutDashboard,
+  ShoppingCart,
+  Boxes,
+  BarChart3,
+  Settings,
+  Coffee,
+  Moon,
+  Sun,
+  LogOut,
+} from "lucide-react";
 
 const emptySubscribe = () => () => {};
 function useIsMounted() {
@@ -19,11 +30,11 @@ function useIsMounted() {
 }
 
 const navItems = [
-  { label: "Dashboard", icon: "dashboard", href: "/" },
-  { label: "POS", icon: "point_of_sale", href: "/pos" },
-  { label: "Inventory", icon: "inventory_2", href: "/inventory" },
-  { label: "Reports", icon: "assessment", href: "/reports" },
-  { label: "Settings", icon: "settings", href: "/settings" },
+  { label: "Dashboard", icon: LayoutDashboard, href: "/" },
+  { label: "Kasir (POS)", icon: ShoppingCart, href: "/pos" },
+  { label: "Inventaris", icon: Boxes, href: "/inventory" },
+  { label: "Laporan", icon: BarChart3, href: "/reports" },
+  { label: "Pengaturan", icon: Settings, href: "/settings" },
 ];
 
 export function Sidebar() {
@@ -59,9 +70,9 @@ export function Sidebar() {
           router.push("/login");
         },
         onError: (ctx) => {
-          toast.error(ctx.error.message || "Failed to logout");
-        }
-      }
+          toast.error(ctx.error.message || "Gagal keluar");
+        },
+      },
     });
   };
 
@@ -71,7 +82,7 @@ export function Sidebar() {
       <div className="px-8 mb-10">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground">
-            <span className="material-symbols-outlined">coffee</span>
+            <Coffee className="w-5 h-5" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground tracking-widest uppercase font-headline">
@@ -87,6 +98,7 @@ export function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 space-y-1">
         {navItems.map((item) => {
+          const Icon = item.icon;
           const isActive = pathname === item.href;
           return (
             <Link
@@ -98,19 +110,12 @@ export function Sidebar() {
                   : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/10"
               }`}
             >
-              <span
-                className="material-symbols-outlined"
-                style={
-                  isActive
-                    ? { fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }
-                    : undefined
-                }
-              >
-                {item.icon}
-              </span>
-              <span className="font-headline text-sm font-medium tracking-wide">
-                {item.label}
-              </span>
+              <Icon
+                className="w-5 h-5 flex-shrink-0"
+                strokeWidth={isActive ? 2.5 : 2}
+                fill={isActive ? "currentColor" : "none"}
+              />
+              <span className="font-headline text-sm font-medium tracking-wide">{item.label}</span>
             </Link>
           );
         })}
@@ -131,14 +136,14 @@ export function Sidebar() {
                   animate={{ opacity: 1, rotate: 0, scale: 1 }}
                   exit={{ opacity: 0, rotate: 90, scale: 0.3 }}
                   transition={{ duration: 0.3, ease: "backOut" }}
-                  className="material-symbols-outlined text-muted-foreground absolute"
+                  className="text-muted-foreground absolute"
                 >
-                  {theme === "dark" ? "light_mode" : "dark_mode"}
+                  {theme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                 </motion.span>
               </AnimatePresence>
             </div>
             <span className="text-sm font-medium text-muted-foreground font-headline">
-              {theme === "dark" ? "Light Mode" : "Dark Mode"}
+              {theme === "dark" ? "Mode Terang" : "Mode Gelap"}
             </span>
           </button>
         )}
@@ -149,7 +154,7 @@ export function Sidebar() {
         <button
           onClick={handleLogout}
           className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-destructive/10 group transition-all duration-200 border border-transparent hover:border-destructive/20 active:scale-95"
-          title="Sign Out"
+          title="Keluar"
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center overflow-hidden relative border border-border">
@@ -177,9 +182,7 @@ export function Sidebar() {
               </p>
             </div>
           </div>
-          <span className="material-symbols-outlined text-muted-foreground group-hover:text-destructive opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0">
-            logout
-          </span>
+          <LogOut className="w-4 h-4 text-muted-foreground group-hover:text-destructive opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
         </button>
       </div>
     </aside>

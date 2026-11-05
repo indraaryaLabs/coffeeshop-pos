@@ -10,6 +10,8 @@ import {
   Cell,
 } from "recharts";
 import { useTheme } from "next-themes";
+import { TrendingUp, ReceiptText, BarChart3 } from "lucide-react";
+import { formatIDR } from "@/lib/format";
 
 interface WeeklyDataPoint {
   day: string;
@@ -32,14 +34,12 @@ export function WeeklyRevenueChart({ data = [] }: { data?: WeeklyDataPoint[] }) 
 
   return (
     <div className="bg-secondary/50 rounded-xl p-8 relative overflow-hidden flex flex-col h-full">
-      <div className="flex justify-between items-end mb-4">
+      <div className="flex justify-between items-end mb-4 flex-wrap gap-3">
         <div>
           <h4 className="font-headline text-2xl font-bold text-foreground tracking-tight">
-            Weekly Performance
+            Kinerja Mingguan
           </h4>
-          <p className="text-muted-foreground text-sm">
-            Tracking for the last 7 days
-          </p>
+          <p className="text-muted-foreground text-sm">7 hari terakhir</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -50,7 +50,7 @@ export function WeeklyRevenueChart({ data = [] }: { data?: WeeklyDataPoint[] }) 
                 : "text-muted-foreground hover:bg-card/40"
             }`}
           >
-            Revenue
+            Pendapatan
           </button>
           <button
             onClick={() => setMetric("orders")}
@@ -60,7 +60,7 @@ export function WeeklyRevenueChart({ data = [] }: { data?: WeeklyDataPoint[] }) 
                 : "text-muted-foreground hover:bg-card/40"
             }`}
           >
-            Orders
+            Pesanan
           </button>
         </div>
       </div>
@@ -68,27 +68,23 @@ export function WeeklyRevenueChart({ data = [] }: { data?: WeeklyDataPoint[] }) 
       {/* Summary stats */}
       <div className="flex gap-6 mb-6">
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary text-base">trending_up</span>
-          <span className="text-sm font-bold text-foreground">
-            ${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </span>
-          <span className="text-xs text-muted-foreground">total revenue</span>
+          <TrendingUp className="w-4 h-4 text-primary" />
+          <span className="text-sm font-bold text-foreground tabular-nums">{formatIDR(totalRevenue)}</span>
+          <span className="text-xs text-muted-foreground">total pendapatan</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-accent text-base">receipt_long</span>
-          <span className="text-sm font-bold text-foreground">
-            {totalOrders}
-          </span>
-          <span className="text-xs text-muted-foreground">orders</span>
+          <ReceiptText className="w-4 h-4 text-accent" />
+          <span className="text-sm font-bold text-foreground tabular-nums">{totalOrders}</span>
+          <span className="text-xs text-muted-foreground">pesanan</span>
         </div>
       </div>
 
       <div className="flex-1 min-h-[220px]">
         {data.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-            <span className="material-symbols-outlined text-4xl mb-2 opacity-30">bar_chart</span>
-            <p className="text-sm font-medium">No data for this period</p>
-            <p className="text-xs">Complete transactions to see weekly performance</p>
+            <BarChart3 className="w-10 h-10 mb-2 opacity-30" />
+            <p className="text-sm font-medium">Belum ada data untuk periode ini</p>
+            <p className="text-xs">Selesaikan transaksi untuk melihat kinerja mingguan</p>
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%" minHeight={220}>
@@ -106,13 +102,11 @@ export function WeeklyRevenueChart({ data = [] }: { data?: WeeklyDataPoint[] }) 
                   if (active && payload && payload.length) {
                     return (
                       <div className="bg-card border border-border px-3 py-2 rounded-lg shadow-lg">
-                        <p className="font-bold text-sm text-foreground">
-                          {payload[0].payload.day}
-                        </p>
-                        <p className="text-primary font-headline font-bold">
+                        <p className="font-bold text-sm text-foreground">{payload[0].payload.day}</p>
+                        <p className="text-primary font-headline font-bold tabular-nums">
                           {metric === "revenue"
-                            ? `$${Number(payload[0].value).toLocaleString()}`
-                            : `${payload[0].value} Orders`}
+                            ? formatIDR(Number(payload[0].value))
+                            : `${payload[0].value} Pesanan`}
                         </p>
                       </div>
                     );

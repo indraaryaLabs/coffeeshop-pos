@@ -9,34 +9,38 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
+import { Coffee, Mail, Lock, Loader2, ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) return toast.error("Please enter both email and password.");
+    if (!email || !password) return toast.error("Masukkan email dan password.");
 
     setIsLoading(true);
 
-    await authClient.signIn.email({
-      email,
-      password,
-      callbackURL: "/",
-    }, {
-      onSuccess: () => {
-        toast.success("Successfully signed in!");
-        router.push("/");
+    await authClient.signIn.email(
+      {
+        email,
+        password,
+        callbackURL: "/",
       },
-      onError: (ctx) => {
-        toast.error(ctx.error.message || "Invalid credentials. Please try again.");
-        setIsLoading(false);
+      {
+        onSuccess: () => {
+          toast.success("Berhasil masuk!");
+          router.push("/");
+        },
+        onError: (ctx) => {
+          toast.error(ctx.error.message || "Email atau password salah.");
+          setIsLoading(false);
+        },
       }
-    });
+    );
   };
 
   return (
@@ -46,7 +50,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-black/30 z-10 mix-blend-multiply" />
         <Image
           unoptimized
-          src="/images/barista-profile.jpg" // Using an existing known image representing an aesthetic barista shot
+          src="/images/barista-profile.jpg"
           alt="The Atelier Coffee Shop"
           fill
           priority
@@ -59,13 +63,13 @@ export default function LoginPage() {
           className="relative z-20 text-center max-w-sm"
         >
           <div className="w-20 h-20 mx-auto rounded-2xl bg-primary/90 flex items-center justify-center text-primary-foreground mb-6 shadow-xl backdrop-blur-md border border-white/20">
-            <span className="material-symbols-outlined text-4xl">coffee</span>
+            <Coffee className="w-10 h-10" />
           </div>
           <h1 className="font-headline text-5xl font-extrabold text-white tracking-widest uppercase mb-4 drop-shadow-md">
             The Atelier
           </h1>
           <p className="text-white/80 font-medium tracking-widest uppercase text-sm drop-shadow-sm">
-            Crafting the perfect cup, every time.
+            Menyajikan kopi terbaik, setiap saat.
           </p>
         </motion.div>
       </div>
@@ -80,10 +84,10 @@ export default function LoginPage() {
         >
           <div className="space-y-2 text-center lg:text-left">
             <h2 className="font-headline text-4xl font-extrabold text-foreground tracking-tight">
-              Welcome back
+              Selamat Datang
             </h2>
             <p className="text-muted-foreground font-medium">
-              Enter your credentials to access the POS.
+              Masuk dengan akun staf untuk mengakses kasir.
             </p>
           </div>
 
@@ -92,13 +96,11 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <label className="text-sm font-bold text-foreground">Email</label>
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-2.5 text-muted-foreground text-xl">
-                    mail
-                  </span>
+                  <Mail className="w-5 h-5 absolute left-3 top-3.5 text-muted-foreground" />
                   <Input
                     type="email"
                     required
-                    placeholder="julian@theatelier.co"
+                    placeholder="kasir@theatelier.co"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 h-12 bg-card border-border rounded-xl shadow-sm"
@@ -109,14 +111,12 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-bold text-foreground">Password</label>
-                  <a href="#" className="text-sm font-bold text-primary hover:underline">
-                    Forgot Password?
-                  </a>
+                  <span className="text-sm font-bold text-primary">
+                    Lupa password? Hubungi admin.
+                  </span>
                 </div>
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-2.5 text-muted-foreground text-xl">
-                    lock
-                  </span>
+                  <Lock className="w-5 h-5 absolute left-3 top-3.5 text-muted-foreground" />
                   <Input
                     type="password"
                     required
@@ -135,17 +135,11 @@ export default function LoginPage() {
               className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-bold text-base hover:bg-primary/90 transition-all active:scale-[0.98] shadow-md flex items-center justify-center gap-2"
             >
               {isLoading ? (
-                <motion.span
-                  animate={{ rotate: 360 }}
-                  transition={{ repeat: Infinity, ease: "linear", duration: 1 }}
-                  className="material-symbols-outlined text-lg"
-                >
-                  progress_activity
-                </motion.span>
+                <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
-                  <span>Sign In</span>
-                  <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                  <span>Masuk</span>
+                  <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </Button>
@@ -153,13 +147,13 @@ export default function LoginPage() {
 
           <div className="text-center space-y-2">
             <p className="text-sm text-muted-foreground">
-              Don&apos;t have an account?{" "}
+              Belum punya akun?{" "}
               <Link href="/signup" className="font-bold text-primary hover:underline">
-                Sign Up
+                Daftar
               </Link>
             </p>
             <p className="text-xs text-muted-foreground/60">
-              Only authorized staff can access the POS.
+              Hanya staf resmi yang dapat mengakses sistem kasir.
             </p>
           </div>
         </motion.div>

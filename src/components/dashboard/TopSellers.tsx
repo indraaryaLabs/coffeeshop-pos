@@ -3,6 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { TrendingUp } from "lucide-react";
+import { formatIDR } from "@/lib/format";
 
 interface TopSellerItem {
   name: string;
@@ -15,19 +17,17 @@ export function TopSellers({ items = [] }: { items?: TopSellerItem[] }) {
   return (
     <div className="bg-card rounded-xl p-8 shadow-sm border border-border flex flex-col h-full">
       <div className="flex items-center justify-between mb-6">
-        <h4 className="font-headline text-xl font-bold text-foreground">
-          Top Sellers
-        </h4>
+        <h4 className="font-headline text-xl font-bold text-foreground">Terlaris</h4>
         <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
-          All Time
+          Sepanjang Waktu
         </span>
       </div>
       <div className="space-y-6 flex-1">
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-            <span className="material-symbols-outlined text-4xl mb-2 opacity-30">trending_up</span>
-            <p className="text-sm font-medium">No sales data yet</p>
-            <p className="text-xs">Complete some transactions to see top sellers</p>
+            <TrendingUp className="w-10 h-10 mb-2 opacity-30" />
+            <p className="text-sm font-medium">Belum ada data penjualan</p>
+            <p className="text-xs">Selesaikan beberapa transaksi untuk melihat produk terlaris</p>
           </div>
         ) : (
           items.map((item, index) => (
@@ -45,15 +45,11 @@ export function TopSellers({ items = [] }: { items?: TopSellerItem[] }) {
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-sm text-foreground truncate">
-                  {item.name}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {item.sold} sold
-                </p>
+                <p className="font-bold text-sm text-foreground truncate">{item.name}</p>
+                <p className="text-xs text-muted-foreground">{item.sold} terjual</p>
               </div>
-              <p className="font-headline font-bold text-primary text-sm flex-shrink-0">
-                ${item.revenue.toFixed(2)}
+              <p className="font-headline font-bold text-primary text-sm flex-shrink-0 tabular-nums">
+                {formatIDR(item.revenue)}
               </p>
             </div>
           ))
@@ -64,7 +60,7 @@ export function TopSellers({ items = [] }: { items?: TopSellerItem[] }) {
           variant="secondary"
           className="w-full mt-8 py-6 bg-secondary text-foreground text-xs font-bold rounded-lg hover:bg-primary/20 transition-all uppercase tracking-widest active:scale-95"
         >
-          View Full Inventory
+          Lihat Inventory Lengkap
         </Button>
       </Link>
     </div>

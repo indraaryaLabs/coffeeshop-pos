@@ -3,15 +3,21 @@ import { db } from "@/lib/db";
 import { transactions } from "@/lib/db/schema";
 import { sql, desc, eq } from "drizzle-orm";
 import { user, transactionItems, products } from "@/lib/db/schema";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 export default async function ReportsPage() {
-  // Aggregate Historical Data
+  const session = await auth.api.getSession({ headers: await headers() });
+  const isAdmin = session?.user?.role === "admin";
+
+  // Aggregate Historical Data (completed transactions only)
   const [metrics] = await db
     .select({
       totalRevenue: sql<number>`sum(${transactions.totalAmount})`,
       totalOrders: sql<number>`count(${transactions.id})`
     })
-    .from(transactions);
+    .from(transactions)
+    .where(eq(transactions.status, "completed"));
 
   const totalRevenue = Number(metrics?.totalRevenue || 0);
   const totalOrders = Number(metrics?.totalOrders || 0);
@@ -103,12 +109,12 @@ export default async function ReportsPage() {
   });
 
   const mappedTransactions = dbTransactions.map((tx) => ({
-    id: tx.id.substring(0, 8).toUpperCase(),
+    id: tx.id,
     customer: tx.customerName || "Guest",
     rawDate: tx.createdAt.toISOString(),
-    date: tx.createdAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-    time: tx.createdAt.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
-    cashier: tx.cashierName || tx.cashierId || "System",
+    date: tx.createdAt.toLocaleDateString("id-ID", { month: "short", day: "numeric", year: "numeric" }),
+    time: tx.createdAt.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
+    cashier: tx.cashierName || "System",
     cashierInitials: (tx.cashierName || tx.cashierId || "S").substring(0, 2).toUpperCase(),
     paymentMethod: tx.paymentMethod,
     total: Number(tx.totalAmount),
@@ -123,6 +129,7 @@ export default async function ReportsPage() {
       transactions={mappedTransactions}
       volumeData={volumeData}
       categoryData={categoryData}
+      isAdmin={isAdmin}
     />
   );
 }

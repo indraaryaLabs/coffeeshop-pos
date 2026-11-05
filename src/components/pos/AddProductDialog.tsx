@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { Plus, UtensilsCrossed, Package, FlaskConical, X, Search, TriangleAlert, CirclePlus } from "lucide-react";
 import { createProduct } from "@/lib/actions/product";
 import {
   Dialog,
@@ -20,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { categories } from "@/lib/data/products";
+import { categories } from "@/lib/catalog";
 
 interface RawMaterial {
   id: string;
@@ -78,11 +79,11 @@ export function AddProductDialog({ rawMaterials = [] }: AddProductDialogProps) {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    
+
     // Validate: menu items must have at least 1 ingredient
     if (productType === "menu" && selectedIngredients.length === 0) {
-      toast.error("Menu items must have at least 1 ingredient", {
-        description: "Please select raw materials used to make this menu item.",
+      toast.error("Menu harus punya minimal 1 bahan", {
+        description: "Pilih bahan baku yang dipakai untuk membuat menu ini.",
       });
       return;
     }
@@ -109,12 +110,12 @@ export function AddProductDialog({ rawMaterials = [] }: AddProductDialogProps) {
     const res = await createProduct(formData);
 
     if (res.success) {
-      toast.success("Product created successfully!");
+      toast.success("Produk berhasil dibuat");
       setOpen(false);
       setSelectedIngredients([]);
       setProductType("menu");
     } else {
-      toast.error(res.error || "Failed to create product.");
+      toast.error(res.error || "Gagal membuat produk");
     }
 
     setLoading(false);
@@ -134,19 +135,19 @@ export function AddProductDialog({ rawMaterials = [] }: AddProductDialogProps) {
       <DialogTrigger
         render={<Button className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl mr-2" />}
       >
-        <span className="material-symbols-outlined text-sm">add</span>
-        Add New Product
+        <Plus className="w-4 h-4" />
+        Produk Baru
       </DialogTrigger>
       <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-headline text-2xl font-extrabold">
-            Add New Product
+            Tambah Produk Baru
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4 pt-4">
           {/* Product Type Toggle */}
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-muted-foreground">Product Type</label>
+            <label className="text-sm font-semibold text-muted-foreground">Tipe Produk</label>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -157,8 +158,8 @@ export function AddProductDialog({ rawMaterials = [] }: AddProductDialogProps) {
                     : "bg-secondary text-muted-foreground hover:bg-secondary/80"
                 }`}
               >
-                <span className="material-symbols-outlined text-base">restaurant_menu</span>
-                Menu Item
+                <UtensilsCrossed className="w-4 h-4" />
+                Menu
               </button>
               <button
                 type="button"
@@ -169,36 +170,36 @@ export function AddProductDialog({ rawMaterials = [] }: AddProductDialogProps) {
                     : "bg-secondary text-muted-foreground hover:bg-secondary/80"
                 }`}
               >
-                <span className="material-symbols-outlined text-base">inventory_2</span>
-                Retail Product
+                <Package className="w-4 h-4" />
+                Produk Retail
               </button>
             </div>
             <p className="text-[11px] text-muted-foreground">
               {productType === "menu"
-                ? "Menu items are made from raw materials. You must select the ingredients."
-                : "Retail products are sold directly from inventory stock."}
+                ? "Menu dibuat dari bahan baku — wajib memilih bahan resepnya."
+                : "Produk retail dijual langsung dari stok inventory."}
             </p>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-muted-foreground">Product Name</label>
-            <Input name="name" required placeholder="e.g. Kopi Susu Gula Aren" />
+            <label className="text-sm font-semibold text-muted-foreground">Nama Produk</label>
+            <Input name="name" required placeholder="cth. Kopi Susu Gula Aren" />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-muted-foreground">Description</label>
+            <label className="text-sm font-semibold text-muted-foreground">Deskripsi</label>
             <Input
               name="description"
               required
-              placeholder="e.g. Perpaduan kopi robusta dengan gula aren asli"
+              placeholder="cth. Perpaduan kopi robusta dengan gula aren asli"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-muted-foreground">Category</label>
+            <label className="text-sm font-semibold text-muted-foreground">Kategori</label>
             <Select name="category" required defaultValue={categories[1].value}>
               <SelectTrigger>
-                <SelectValue placeholder="Select Category" />
+                <SelectValue placeholder="Pilih kategori" />
               </SelectTrigger>
               <SelectContent>
                 {categories
@@ -213,23 +214,30 @@ export function AddProductDialog({ rawMaterials = [] }: AddProductDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-muted-foreground">Product Image</label>
+            <label className="text-sm font-semibold text-muted-foreground">Gambar Produk</label>
             <Input
               name="image"
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp"
               className="cursor-pointer file:text-primary file:font-semibold file:bg-primary/10 file:border-0 hover:file:bg-primary/20 file:px-4 file:py-1 file:rounded-xl file:mr-4"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-muted-foreground">Price ($)</label>
-              <Input name="price" type="number" step="0.01" min="0" required placeholder="4.50" />
+              <label className="text-sm font-semibold text-muted-foreground">Harga (Rp)</label>
+              <Input
+                name="price"
+                inputMode="numeric"
+                required
+                placeholder="25000"
+                pattern="[0-9]+"
+                title="Masukkan angka tanpa titik/koma"
+              />
             </div>
             {productType === "retail" && (
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-muted-foreground">Initial Stock</label>
+                <label className="text-sm font-semibold text-muted-foreground">Stok Awal</label>
                 <Input name="initialStock" type="number" min="0" required placeholder="10" />
               </div>
             )}
@@ -240,12 +248,12 @@ export function AddProductDialog({ rawMaterials = [] }: AddProductDialogProps) {
             <div className="space-y-3 pt-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-semibold text-muted-foreground flex items-center gap-1">
-                  <span className="material-symbols-outlined text-base text-primary">science</span>
-                  Recipe Ingredients
+                  <FlaskConical className="w-4 h-4 text-primary" />
+                  Bahan Resep
                   <span className="text-destructive">*</span>
                 </label>
                 <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
-                  {selectedIngredients.length} selected
+                  {selectedIngredients.length} dipilih
                 </span>
               </div>
 
@@ -271,7 +279,7 @@ export function AddProductDialog({ rawMaterials = [] }: AddProductDialogProps) {
                           }
                           className="w-16 h-7 text-xs text-center px-1"
                         />
-                        <span className="text-[10px] text-muted-foreground font-medium w-8">
+                        <span className="text-[10px] text-muted-foreground font-medium w-10">
                           {ing.unit}
                         </span>
                       </div>
@@ -279,8 +287,9 @@ export function AddProductDialog({ rawMaterials = [] }: AddProductDialogProps) {
                         type="button"
                         onClick={() => removeIngredient(ing.rawMaterialId)}
                         className="text-destructive hover:text-destructive/80 transition-colors"
+                        aria-label="Hapus bahan"
                       >
-                        <span className="material-symbols-outlined text-base">close</span>
+                        <X className="w-4 h-4" />
                       </button>
                     </div>
                   ))}
@@ -290,21 +299,19 @@ export function AddProductDialog({ rawMaterials = [] }: AddProductDialogProps) {
               {/* Search & Add Ingredients */}
               <div className="relative">
                 <Input
-                  placeholder="Search raw materials..."
+                  placeholder="Cari bahan baku..."
                   value={ingredientSearch}
                   onChange={(e) => setIngredientSearch(e.target.value)}
                   className="pl-9"
                 />
-                <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                  search
-                </span>
+                <Search className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
               </div>
 
               {ingredientSearch && (
                 <div className="bg-card border border-border rounded-lg max-h-40 overflow-y-auto">
                   {filteredMaterials.length === 0 ? (
                     <div className="px-4 py-3 text-xs text-muted-foreground text-center">
-                      No raw materials found. Add them in Inventory first.
+                      Bahan baku tidak ditemukan. Tambahkan di menu Inventory dulu.
                     </div>
                   ) : (
                     filteredMaterials.map((mat) => (
@@ -317,12 +324,10 @@ export function AddProductDialog({ rawMaterials = [] }: AddProductDialogProps) {
                         <div>
                           <span className="text-sm font-medium text-foreground">{mat.name}</span>
                           <span className="text-[10px] text-muted-foreground ml-2">
-                            Stock: {mat.currentStock} {mat.unit}
+                            Stok: {mat.currentStock} {mat.unit}
                           </span>
                         </div>
-                        <span className="material-symbols-outlined text-primary text-base opacity-0 group-hover:opacity-100 transition-opacity">
-                          add_circle
-                        </span>
+                        <CirclePlus className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                       </button>
                     ))
                   )}
@@ -331,12 +336,10 @@ export function AddProductDialog({ rawMaterials = [] }: AddProductDialogProps) {
 
               {rawMaterials.length === 0 && (
                 <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 flex items-start gap-2">
-                  <span className="material-symbols-outlined text-amber-500 text-base mt-0.5">
-                    warning
-                  </span>
+                  <TriangleAlert className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
                   <p className="text-xs text-amber-700 dark:text-amber-400">
-                    No raw materials available. Please add raw materials in the{" "}
-                    <strong>Inventory</strong> section first before creating menu items.
+                    Belum ada bahan baku. Tambahkan bahan baku di menu{" "}
+                    <strong>Inventory</strong> dulu sebelum membuat menu.
                   </p>
                 </div>
               )}
@@ -345,7 +348,7 @@ export function AddProductDialog({ rawMaterials = [] }: AddProductDialogProps) {
 
           <DialogFooter className="pt-4">
             <Button type="submit" disabled={loading} className="w-full font-bold">
-              {loading ? "Creating..." : "Save Product"}
+              {loading ? "Menyimpan..." : "Simpan Produk"}
             </Button>
           </DialogFooter>
         </form>

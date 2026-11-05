@@ -3,13 +3,12 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { Banknote, ShoppingBag, TriangleAlert, ChevronDown, ChevronUp } from "lucide-react";
+import { formatIDR } from "@/lib/format";
 
 const container = {
   hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 },
-  },
+  show: { opacity: 1, transition: { staggerChildren: 0.1 } },
 };
 
 const item = {
@@ -54,20 +53,15 @@ export function SummaryCards({
         >
           <div className="flex justify-between items-start">
             <div className="p-3 bg-secondary text-primary rounded-xl">
-              <span className="material-symbols-outlined material-symbols-filled">
-                payments
-              </span>
+              <Banknote className="w-6 h-6" />
             </div>
-            <span className="text-primary font-bold text-sm">
-              Live
-            </span>
           </div>
           <div className="mt-6">
             <p className="text-muted-foreground font-medium text-sm uppercase tracking-widest">
-              Revenue Today
+              Pendapatan Hari Ini
             </p>
-            <h3 className="font-headline text-4xl font-extrabold text-foreground mt-2 tracking-tight">
-              ${revenueToday.toFixed(2)}
+            <h3 className="font-headline text-4xl font-extrabold text-foreground mt-2 tracking-tight tabular-nums">
+              {formatIDR(revenueToday)}
             </h3>
           </div>
         </motion.div>
@@ -79,19 +73,14 @@ export function SummaryCards({
         >
           <div className="flex justify-between items-start">
             <div className="p-3 bg-secondary text-accent rounded-xl">
-              <span className="material-symbols-outlined material-symbols-filled">
-                shopping_bag
-              </span>
+              <ShoppingBag className="w-6 h-6" />
             </div>
-            <span className="text-muted-foreground font-medium text-sm">
-              Live
-            </span>
           </div>
           <div className="mt-6">
             <p className="text-muted-foreground font-medium text-sm uppercase tracking-widest">
-              Items Sold
+              Item Terjual
             </p>
-            <h3 className="font-headline text-4xl font-extrabold text-foreground mt-2 tracking-tight">
+            <h3 className="font-headline text-4xl font-extrabold text-foreground mt-2 tracking-tight tabular-nums">
               {itemsSold}
             </h3>
           </div>
@@ -105,9 +94,7 @@ export function SummaryCards({
         >
           <div className="flex justify-between items-start">
             <div className="p-3 bg-secondary text-accent rounded-xl">
-              <span className="material-symbols-outlined material-symbols-filled">
-                warning
-              </span>
+              <TriangleAlert className="w-6 h-6" />
             </div>
             <div className="flex items-center gap-3">
               <button
@@ -115,25 +102,27 @@ export function SummaryCards({
                   e.stopPropagation();
                   setShowLowStock(!showLowStock);
                 }}
-                className="text-accent font-bold text-xs uppercase tracking-tighter hover:text-foreground transition-colors"
+                className="text-accent font-bold text-xs uppercase tracking-tighter hover:text-foreground transition-colors flex items-center gap-1"
               >
-                {showLowStock ? "Hide" : "Details"}
+                {showLowStock ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                {showLowStock ? "Sembunyikan" : "Detail"}
               </button>
               <Link
                 href="/inventory"
                 onClick={(e) => e.stopPropagation()}
                 className="text-accent font-bold text-xs underline underline-offset-4 uppercase tracking-tighter hover:text-foreground transition-colors"
               >
-                Restock Now
+                Restok
               </Link>
             </div>
           </div>
           <div className="mt-6">
             <p className="text-muted-foreground font-medium text-sm uppercase tracking-widest">
-              Low Stock Alerts
+              Stok Menipis
             </p>
-            <h3 className="font-headline text-4xl font-extrabold text-foreground mt-2 tracking-tight">
-              {lowStockCount.toString().padStart(2, '0')} <span className="text-lg font-medium text-muted-foreground">Items</span>
+            <h3 className="font-headline text-4xl font-extrabold text-foreground mt-2 tracking-tight tabular-nums">
+              {lowStockCount.toString().padStart(2, "0")}{" "}
+              <span className="text-lg font-medium text-muted-foreground">item</span>
             </h3>
           </div>
         </motion.div>
@@ -152,13 +141,13 @@ export function SummaryCards({
             <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-primary">inventory_2</span>
+                  <TriangleAlert className="w-5 h-5 text-primary" />
                   <h4 className="font-headline text-lg font-bold text-foreground">
-                    Low Stock Inventory
+                    Inventory Stok Menipis
                   </h4>
                 </div>
                 <span className="text-xs text-muted-foreground font-medium uppercase tracking-widest">
-                  Real-time from inventory
+                  Data langsung dari inventory
                 </span>
               </div>
               <div className="grid gap-3">
@@ -168,30 +157,26 @@ export function SummaryCards({
                     className="flex items-center justify-between px-4 py-3 rounded-lg bg-secondary/40 hover:bg-secondary/70 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
-                        stockItem.currentStock === 0 
-                          ? "bg-destructive animate-pulse" 
-                          : "bg-amber-500"
-                      }`} />
+                      <div
+                        className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                          stockItem.currentStock === 0 ? "bg-destructive animate-pulse" : "bg-amber-500"
+                        }`}
+                      />
                       <div>
-                        <p className="font-semibold text-sm text-foreground">
-                          {stockItem.productName}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {stockItem.category}
-                        </p>
+                        <p className="font-semibold text-sm text-foreground">{stockItem.productName}</p>
+                        <p className="text-xs text-muted-foreground">{stockItem.category}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className={`font-headline font-bold text-sm ${
-                        stockItem.currentStock === 0 
-                          ? "text-destructive" 
-                          : "text-amber-500"
-                      }`}>
+                      <p
+                        className={`font-headline font-bold text-sm tabular-nums ${
+                          stockItem.currentStock === 0 ? "text-destructive" : "text-amber-500"
+                        }`}
+                      >
                         {stockItem.currentStock} {stockItem.unit}
                       </p>
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                        {stockItem.currentStock === 0 ? "Out of Stock" : "Low Stock"}
+                        {stockItem.currentStock === 0 ? "Stok Habis" : "Stok Menipis"}
                       </p>
                     </div>
                   </div>

@@ -9,38 +9,40 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
+import { Coffee, User, Mail, Lock, Loader2, UserPlus } from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
-  
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"admin" | "barista">("barista");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !password) return toast.error("Please fill in all fields.");
+    if (!name || !email || !password) return toast.error("Lengkapi semua kolom.");
 
     setIsLoading(true);
 
-    await authClient.signUp.email({
-      email,
-      password,
-      name,
-      role, // Custom field
-      callbackURL: "/",
-    }, {
-      onSuccess: () => {
-        toast.success("Account created successfully!");
-        router.push("/");
+    await authClient.signUp.email(
+      {
+        email,
+        password,
+        name,
+        callbackURL: "/",
       },
-      onError: (ctx) => {
-        toast.error(ctx.error.message || "Failed to create account. Please try again.");
-        setIsLoading(false);
+      {
+        onSuccess: () => {
+          toast.success("Akun berhasil dibuat!");
+          router.push("/");
+        },
+        onError: (ctx) => {
+          toast.error(ctx.error.message || "Gagal membuat akun. Coba lagi.");
+          setIsLoading(false);
+        },
       }
-    });
+    );
   };
 
   return (
@@ -63,13 +65,13 @@ export default function SignupPage() {
           className="relative z-20 text-center max-w-sm"
         >
           <div className="w-20 h-20 mx-auto rounded-2xl bg-primary/90 flex items-center justify-center text-primary-foreground mb-6 shadow-xl backdrop-blur-md border border-white/20">
-            <span className="material-symbols-outlined text-4xl">coffee</span>
+            <Coffee className="w-10 h-10" />
           </div>
           <h1 className="font-headline text-5xl font-extrabold text-white tracking-widest uppercase mb-4 drop-shadow-md">
             The Atelier
           </h1>
           <p className="text-white/80 font-medium tracking-widest uppercase text-sm drop-shadow-sm">
-            Join the craft, master the cup.
+            Bergabunglah, kuasai seni menyeduh.
           </p>
         </motion.div>
       </div>
@@ -84,21 +86,19 @@ export default function SignupPage() {
         >
           <div className="space-y-2 text-center lg:text-left">
             <h2 className="font-headline text-4xl font-extrabold text-foreground tracking-tight">
-              Create Account
+              Buat Akun
             </h2>
             <p className="text-muted-foreground font-medium">
-              Start your journey with The Atelier.
+              Daftarkan staf baru. Role default adalah Barista.
             </p>
           </div>
 
           <form onSubmit={handleSignUp} className="space-y-6">
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-bold text-foreground">Full Name</label>
+                <label className="text-sm font-bold text-foreground">Nama Lengkap</label>
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-2.5 text-muted-foreground text-xl">
-                    person
-                  </span>
+                  <User className="w-5 h-5 absolute left-3 top-3.5 text-muted-foreground" />
                   <Input
                     type="text"
                     required
@@ -113,13 +113,11 @@ export default function SignupPage() {
               <div className="space-y-2">
                 <label className="text-sm font-bold text-foreground">Email</label>
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-2.5 text-muted-foreground text-xl">
-                    mail
-                  </span>
+                  <Mail className="w-5 h-5 absolute left-3 top-3.5 text-muted-foreground" />
                   <Input
                     type="email"
                     required
-                    placeholder="julian@theatelier.co"
+                    placeholder="kasir@theatelier.co"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 h-12 bg-card border-border rounded-xl shadow-sm"
@@ -130,9 +128,7 @@ export default function SignupPage() {
               <div className="space-y-2">
                 <label className="text-sm font-bold text-foreground">Password</label>
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-2.5 text-muted-foreground text-xl">
-                    lock
-                  </span>
+                  <Lock className="w-5 h-5 absolute left-3 top-3.5 text-muted-foreground" />
                   <Input
                     type="password"
                     required
@@ -143,34 +139,6 @@ export default function SignupPage() {
                   />
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-foreground">Role</label>
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setRole("barista")}
-                    className={`flex-1 h-12 rounded-xl border-2 font-bold transition-all ${
-                      role === "barista"
-                        ? "border-primary bg-primary/5 text-primary"
-                        : "border-border bg-card text-muted-foreground hover:border-border/80"
-                    }`}
-                  >
-                    Barista
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRole("admin")}
-                    className={`flex-1 h-12 rounded-xl border-2 font-bold transition-all ${
-                      role === "admin"
-                        ? "border-primary bg-primary/5 text-primary"
-                        : "border-border bg-card text-muted-foreground hover:border-border/80"
-                    }`}
-                  >
-                    Admin
-                  </button>
-                </div>
-              </div>
             </div>
 
             <Button
@@ -179,26 +147,20 @@ export default function SignupPage() {
               className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-bold text-base hover:bg-primary/90 transition-all active:scale-[0.98] shadow-md flex items-center justify-center gap-2"
             >
               {isLoading ? (
-                <motion.span
-                  animate={{ rotate: 360 }}
-                  transition={{ repeat: Infinity, ease: "linear", duration: 1 }}
-                  className="material-symbols-outlined text-lg"
-                >
-                  progress_activity
-                </motion.span>
+                <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
-                  <span>Sign Up</span>
-                  <span className="material-symbols-outlined text-lg">person_add</span>
+                  <span>Daftar</span>
+                  <UserPlus className="w-4 h-4" />
                 </>
               )}
             </Button>
           </form>
 
           <p className="text-center text-sm text-muted-foreground">
-            Already have an account?{" "}
+            Sudah punya akun?{" "}
             <Link href="/login" className="font-bold text-primary hover:underline">
-              Sign In
+              Masuk
             </Link>
           </p>
         </motion.div>

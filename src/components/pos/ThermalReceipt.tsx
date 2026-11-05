@@ -1,149 +1,166 @@
 import React, { forwardRef } from "react";
-import { CartItem } from "@/hooks/use-cart";
+import type { CartItem } from "@/hooks/use-cart";
+import type { PaymentMethod } from "@/lib/catalog";
+import { formatIDR } from "@/lib/format";
+import type { ShopProfile } from "./POSClient";
 
 interface ThermalReceiptProps {
+  shop: ShopProfile;
   items: CartItem[];
-  subtotal: number;
-  tax: number;
-  total: number;
+  totals: {
+    subtotal: number;
+    discount: number;
+    tax: number;
+    total: number;
+    paid: number;
+    change: number | null;
+  };
   orderNumber: number;
+  orderType: "dine_in" | "take_away";
   transactionId?: string | null;
   cashierName?: string;
   customerName?: string;
   tableNumber?: string;
-  paymentMethod?: string;
+  paymentMethod?: PaymentMethod;
 }
 
-export const ThermalReceipt = forwardRef<HTMLDivElement, ThermalReceiptProps>(function ThermalReceipt({  items,
-  subtotal,
-  tax,
-  total,
-  orderNumber,
-  transactionId,
-  cashierName = "Cashier 1",
-  customerName = "Guest",
-  tableNumber,
-  paymentMethod = "CASH",
-}, ref) {
-  const date = new Date().toLocaleString("en-US", {
-    dateStyle: "short",
+const METHOD_LABEL: Record<PaymentMethod, string> = {
+  cash: "TUNAI",
+  card: "KARTU",
+  qr_code: "QRIS",
+};
+
+export const ThermalReceipt = forwardRef<HTMLDivElement, ThermalReceiptProps>(function ThermalReceipt(
+  {
+    shop,
+    items,
+    totals,
+    orderNumber,
+    orderType,
+    transactionId,
+    cashierName = "Kasir",
+    customerName = "Guest",
+    tableNumber,
+    paymentMethod = "cash",
+  },
+  ref
+) {
+  const date = new Date().toLocaleString("id-ID", {
+    dateStyle: "medium",
     timeStyle: "short",
   });
 
+  const showPayments = transactionId !== null;
+
   return (
-    <div ref={ref} className="hidden print:block fixed inset-0 bg-white text-black z-[9999] font-mono text-sm">
+    <div ref={ref} className="hidden print:block fixed inset-0 bg-white text-black z-[9999] font-mono text-sm print:block">
       <div className="max-w-[300px] mx-auto p-4 w-[80mm]">
         {/* Header */}
-        <div className="text-center mb-6">
-          <h1 className="font-bold text-2xl mb-1">THE ATELIER</h1>
-          <p className="text-xs">123 Coffee Avenue, Brew City</p>
-          <p className="text-xs">Tel: (555) 123-4567</p>
+        <div className="text-center mb-4">
+          <h1 className="font-bold text-2xl mb-1 uppercase">{shop.shopName}</h1>
+          {shop.address && <p className="text-xs">{shop.address}</p>}
+          {shop.phone && <p className="text-xs">Telp. {shop.phone}</p>}
         </div>
 
-        <div className="flex justify-between text-xs mb-1">
-          <span>Date:</span>
-          <span>{date}</span>
-        </div>
-        <div className="flex justify-between text-xs mb-1">
-          <span>Order #:</span>
-          <span>{orderNumber}</span>
-        </div>
-        <div className="flex justify-between text-xs mb-1">
-          <span>Cashier:</span>
-          <span>{cashierName}</span>
-        </div>
-        {customerName !== "Guest Checkout" && (
-          <div className="flex justify-between text-xs mb-1">
-            <span>Customer:</span>
+        <div className="border-t border-dashed border-black my-2" />
+
+        <div className="text-xs space-y-0.5 mb-2">
+          <div className="flex justify-between">
+            <span>No. Order</span>
+            <span className="font-bold">#{orderNumber}</span>
+          </div>
+          {transactionId && (
+            <div className="flex justify-between">
+              <span>ID Transaksi</span>
+              <span>{transactionId.substring(0, 8).toUpperCase()}</span>
+            </div>
+          )}
+          <div className="flex justify-between">
+            <span>Tanggal</span>
+            <span>{date}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Kasir</span>
+            <span>{cashierName}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Tipe</span>
+            <span>{orderType === "dine_in" ? `DINE-IN${tableNumber ? ` — MEJA ${tableNumber}` : ""}` : "TAKE-AWAY"}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Pelanggan</span>
             <span>{customerName}</span>
           </div>
-        )}
+        </div>
 
-        {/* Separator */}
-        <div className="border-t border-dashed border-black my-4"></div>
+        <div className="border-t border-dashed border-black my-2" />
 
-        {/* Line Items */}
-        <div className="mb-4">
-          <div className="flex justify-between text-xs font-bold mb-2">
-            <span className="w-1/2">Item</span>
-            <span className="w-1/6 text-center">Qty</span>
-            <span className="w-1/3 text-right">Amount</span>
-          </div>
-          {items.map((item, index) => (
-            <div key={index} className="flex justify-between text-xs mb-2">
-              <span className="w-1/2 break-words truncate pr-2">{item.product.name}</span>
-              <span className="w-1/6 text-center">{item.quantity}</span>
-              <span className="w-1/3 text-right">
-                ${(item.quantity * item.product.price).toFixed(2)}
-              </span>
+        {/* Items */}
+        <div className="space-y-1.5 mb-2">
+          {items.length === 0 && !showPayments && <p className="text-xs text-center italic">— Nota sementara —</p>}
+          {items.map((item) => (
+            <div key={item.product.id}>
+              <p className="font-bold">{item.product.name}</p>
+              <div className="flex justify-between">
+                <span>
+                  {item.quantity} x {formatIDR(item.product.price)}
+                </span>
+                <span>{formatIDR(item.product.price * item.quantity)}</span>
+              </div>
             </div>
           ))}
         </div>
 
-        {/* Separator */}
-        <div className="border-t border-dashed border-black my-4"></div>
+        <div className="border-t border-dashed border-black my-2" />
 
         {/* Totals */}
-        <div className="flex justify-between text-xs mb-1">
-          <span>Subtotal</span>
-          <span>${subtotal.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-xs mb-2">
-          <span>Tax</span>
-          <span>${tax.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-sm font-bold mb-4">
-          <span>Total</span>
-          <span>${total.toFixed(2)}</span>
-        </div>
-
-        {/* Payment Type */}
-        <div className="flex justify-between text-xs mb-1">
-          <span>Customer:</span>
-          <span>{customerName}</span>
-        </div>
-        {tableNumber && (
-          <div className="flex justify-between text-xs mb-1 font-bold">
-            <span>Table:</span>
-            <span>{tableNumber}</span>
+        <div className="space-y-1 text-xs">
+          <div className="flex justify-between">
+            <span>Subtotal</span>
+            <span>{formatIDR(totals.subtotal)}</span>
           </div>
-        )}
-        <div className="border-b border-dashed border-black my-2"></div>
-        <div className="flex justify-between text-xs mb-4">
-          <span>Paid By:</span>
-          <span>{paymentMethod}</span>
-        </div>
-
-        <div className="border-t border-dashed border-black my-4"></div>
-
-        {/* Footer */}
-        <div className="text-center text-xs mt-6">
-          <p className="font-bold mb-1">Thank You!</p>
-          <p>Please come again</p>
-          {transactionId && (
-            <p className="mt-4 text-[10px] text-gray-400">Tx: {transactionId}</p>
+          {totals.discount > 0 && (
+            <div className="flex justify-between">
+              <span>Diskon</span>
+              <span>-{formatIDR(totals.discount)}</span>
+            </div>
+          )}
+          {totals.tax > 0 && (
+            <div className="flex justify-between">
+              <span>PPN {shop.taxRatePercent}%</span>
+              <span>{formatIDR(totals.tax)}</span>
+            </div>
+          )}
+          <div className="flex justify-between font-bold text-base border-t border-black pt-1 mt-1">
+            <span>TOTAL</span>
+            <span>{formatIDR(totals.total)}</span>
+          </div>
+          {showPayments && (
+            <>
+              <div className="flex justify-between pt-1">
+                <span>{METHOD_LABEL[paymentMethod]}</span>
+                <span>{formatIDR(totals.paid)}</span>
+              </div>
+              {totals.change !== null && (
+                <div className="flex justify-between font-bold">
+                  <span>Kembalian</span>
+                  <span>{formatIDR(totals.change)}</span>
+                </div>
+              )}
+            </>
           )}
         </div>
-      </div>
 
-      <style dangerouslySetInnerHTML={{ __html: `
-        @media print {
-          @page {
-            size: 80mm auto;
-            margin: 0;
+        <div className="border-t border-dashed border-black my-3" />
+
+        <p className="text-center text-xs mb-1">{shop.receiptFooter}</p>
+        <p className="text-center text-[10px] text-gray-700">{shop.shopName}</p>
+        <style>{`
+          @media print {
+            @page { margin: 0; size: 80mm auto; }
           }
-          body {
-            background: white !important;
-            margin: 0;
-            padding: 0;
-          }
-          * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-            color: black !important;
-          }
-        }
-      `}} />
+        `}</style>
+      </div>
     </div>
   );
 });

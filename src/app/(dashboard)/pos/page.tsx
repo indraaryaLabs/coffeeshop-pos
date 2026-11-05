@@ -1,8 +1,11 @@
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { products, inventory, recipeIngredients } from "@/lib/db/schema";
+import { products, inventory, recipeIngredients, transactions } from "@/lib/db/schema";
 import { POSClient } from "@/components/pos/POSClient";
-import type { Product } from "@/lib/data/products";
+import type { Product } from "@/lib/catalog";
+import { getShopSettings, getActiveShift } from "@/lib/shop";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +17,10 @@ interface RawMaterialForPOS {
 }
 
 export default async function POSPage() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  const cashierName = session?.user?.name || "Kasir";
+  const isAdmin = session?.user?.role === "admin";
+
   // 1. Fetch menu + retail items for POS (raw_material excluded)
   const dbProducts = await db
     .select({
@@ -107,6 +114,39 @@ export default async function POSPage() {
     .innerJoin(inventory, eq(products.id, inventory.productId))
     .where(eq(products.type, "raw_material"));
 
+  // 5. Shop profile + shift context for the register
+  const [shop, activeShift] = await Promise.all([getShopSettings(), getActiveShift()]);
+
+  let shiftSummary = null as null | {
+    openedAt: string;
+    openingCash: number;
+    cashTotal: number;
+    cardTotal: number;
+    qrisTotal: number;
+    orderCount: number;
+  };
+
+  if (activeShift) {
+    const [totals] = await db
+      .select({
+        cashTotal: sql<string>`COALESCE(sum(CASE WHEN ${transactions.paymentMethod} = 'cash' THEN ${transactions.totalAmount} ELSE 0 END), 0)`,
+        cardTotal: sql<string>`COALESCE(sum(CASE WHEN ${transactions.paymentMethod} = 'card' THEN ${transactions.totalAmount} ELSE 0 END), 0)`,
+        qrisTotal: sql<string>`COALESCE(sum(CASE WHEN ${transactions.paymentMethod} = 'qr_code' THEN ${transactions.totalAmount} ELSE 0 END), 0)`,
+        orderCount: sql<number>`count(*)::int`,
+      })
+      .from(transactions)
+      .where(and(eq(transactions.shiftId, activeShift.id), eq(transactions.status, "completed")));
+
+    shiftSummary = {
+      openedAt: activeShift.openedAt.toISOString(),
+      openingCash: Number(activeShift.openingCash),
+      cashTotal: Number(totals?.cashTotal ?? 0),
+      cardTotal: Number(totals?.cardTotal ?? 0),
+      qrisTotal: Number(totals?.qrisTotal ?? 0),
+      orderCount: totals?.orderCount ?? 0,
+    };
+  }
+
   return (
     <POSClient
       initialProducts={initialProducts}
@@ -116,6 +156,17 @@ export default async function POSPage() {
         currentStock: r.currentStock ?? 0,
         unit: r.unit,
       }))}
+      shop={{
+        shopName: shop.shopName,
+        address: shop.address,
+        phone: shop.phone,
+        receiptFooter: shop.receiptFooter,
+        taxEnabled: shop.taxEnabled,
+        taxRatePercent: Number(shop.taxRatePercent),
+      }}
+      shiftSummary={shiftSummary}
+      cashierName={cashierName}
+      isAdmin={isAdmin}
     />
   );
 }

@@ -6,20 +6,30 @@ import { eq, sql, desc, lte, and, gte } from "drizzle-orm";
 export const dynamic = "force-dynamic";
 
 export default async function Dashboard() {
-  // 1. Revenue Today
+  // 1. Revenue Today (completed only)
   const [revResult] = await db
     .select({ total: sql<number>`COALESCE(sum(${transactions.totalAmount}), 0)` })
     .from(transactions)
-    .where(sql`DATE(${transactions.createdAt}) = CURRENT_DATE`);
-    
+    .where(
+      and(
+        sql`DATE(${transactions.createdAt}) = CURRENT_DATE`,
+        eq(transactions.status, "completed")
+      )
+    );
+
   const revenueToday = Number(revResult?.total || 0);
 
-  // 2. Items Sold Today (not just cups — all product types)
+  // 2. Items Sold Today (not just cups — all product types, completed only)
   const [itemsResult] = await db
     .select({ items: sql<number>`COALESCE(sum(${transactionItems.quantity}), 0)` })
     .from(transactionItems)
     .innerJoin(transactions, eq(transactionItems.transactionId, transactions.id))
-    .where(sql`DATE(${transactions.createdAt}) = CURRENT_DATE`);
+    .where(
+      and(
+        sql`DATE(${transactions.createdAt}) = CURRENT_DATE`,
+        eq(transactions.status, "completed")
+      )
+    );
 
   const itemsSold = Number(itemsResult?.items || 0);
 

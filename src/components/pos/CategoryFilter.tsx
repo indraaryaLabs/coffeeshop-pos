@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { categories, type CategoryValue } from "@/lib/data/products";
+import { categories, type CategoryValue } from "@/lib/catalog";
 
 interface CategoryFilterProps {
   activeCategory: CategoryValue;
