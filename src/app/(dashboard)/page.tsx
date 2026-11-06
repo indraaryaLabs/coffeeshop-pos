@@ -101,7 +101,7 @@ export default async function Dashboard() {
     .orderBy(sql`DATE(${transactions.createdAt})`);
 
   // Build a full 7-day array (fill missing days with 0)
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const dayNames = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
   const weeklyPerformance = [];
   for (let i = 6; i >= 0; i--) {
     const d = new Date();

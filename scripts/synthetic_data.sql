@@ -69,8 +69,8 @@ ON CONFLICT (id) DO UPDATE SET
 INSERT INTO "products" (id, name, description, price, category, type, image_url, created_at)
 VALUES
   ('b1b2c3d4-0000-0000-0000-000000000030', 'Kopi Susu Gula Aren', 'Perpaduan kopi robusta pilihan dengan gula aren asli.', 28000, 'Coffee', 'menu', '/images/oat-latte.jpg', NOW() - INTERVAL '15 days'),
-  ('b1b2c3d4-0000-0000-0000-000000000031', 'Coffee Latte', 'Espresso shot dengan steamed milk lembut.', 32000, 'Coffee', 'menu', '/images/latte.png', NOW() - INTERVAL '15 days'),
-  ('b1b2c3d4-0000-0000-0000-000000000032', 'Vanilla Latte', 'Latte klasik dengan sentuhan vanilla premium.', 35000, 'Coffee', 'menu', '/images/flat-white.png', NOW() - INTERVAL '15 days')
+  ('b1b2c3d4-0000-0000-0000-000000000031', 'Coffee Latte', 'Espresso shot dengan steamed milk lembut.', 32000, 'Coffee', 'menu', '/images/latte.jpg', NOW() - INTERVAL '15 days'),
+  ('b1b2c3d4-0000-0000-0000-000000000032', 'Vanilla Latte', 'Latte klasik dengan sentuhan vanilla premium.', 35000, 'Coffee', 'menu', '/images/flat-white.jpg', NOW() - INTERVAL '15 days')
 ON CONFLICT (id) DO UPDATE SET
   description = EXCLUDED.description,
   price = EXCLUDED.price,
@@ -82,9 +82,11 @@ ON CONFLICT (id) DO UPDATE SET
 -----------------------------------------------------------
 INSERT INTO "inventory" (id, product_id, current_stock, unit, supplier, status, last_restocked)
 VALUES
-  ('c1b2c3d4-0000-0000-0000-000000000010', 'b1b2c3d4-0000-0000-0000-000000000010', 50, 'kg', 'Roastery Lokal', 'in_stock', NOW()),
-  ('c1b2c3d4-0000-0000-0000-000000000011', 'b1b2c3d4-0000-0000-0000-000000000011', 20, 'liter', 'Peternakan Segar', 'in_stock', NOW()),
-  ('c1b2c3d4-0000-0000-0000-000000000012', 'b1b2c3d4-0000-0000-0000-000000000012', 3, 'liter', 'Suplier Sirup', 'low_stock', NOW() - INTERVAL '5 days'),
+  -- Raw material stock uses the same unit as recipe_ingredients (gram / ml)
+  -- so POS availability checks compare like-for-like quantities.
+  ('c1b2c3d4-0000-0000-0000-000000000010', 'b1b2c3d4-0000-0000-0000-000000000010', 50000, 'gram', 'Roastery Lokal', 'in_stock', NOW()),
+  ('c1b2c3d4-0000-0000-0000-000000000011', 'b1b2c3d4-0000-0000-0000-000000000011', 20000, 'ml', 'Peternakan Segar', 'in_stock', NOW()),
+  ('c1b2c3d4-0000-0000-0000-000000000012', 'b1b2c3d4-0000-0000-0000-000000000012', 3000, 'ml', 'Suplier Sirup', 'low_stock', NOW() - INTERVAL '5 days'),
   ('c1b2c3d4-0000-0000-0000-000000000020', 'b1b2c3d4-0000-0000-0000-000000000020', 12, 'pcs', 'Dapur Sendiri', 'in_stock', NOW() - INTERVAL '1 day'),
   ('c1b2c3d4-0000-0000-0000-000000000021', 'b1b2c3d4-0000-0000-0000-000000000021', 0, 'pcs', 'Distributor Merch', 'out_of_stock', NOW() - INTERVAL '14 days')
 ON CONFLICT (id) DO UPDATE SET

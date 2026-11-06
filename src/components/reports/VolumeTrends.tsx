@@ -22,6 +22,10 @@ export function VolumeTrends({ data = [] }: VolumeTrendsProps) {
   const displayData = data;
   const maxValue =
     displayData.length > 0 ? Math.max(...displayData.map((d) => d.orders)) : 0;
+  // Highlight only the first bar reaching the max (ties keep the base color).
+  const firstMaxIndex = displayData.findIndex(
+    (d) => d.orders === maxValue && maxValue > 0
+  );
 
   const baseColor = resolvedTheme === "dark" ? "#8C5A3C" : "#D9C5B2";
   const hoverColor = resolvedTheme === "dark" ? "#C08552" : "#8C5A3C";
@@ -72,10 +76,10 @@ export function VolumeTrends({ data = [] }: VolumeTrendsProps) {
                 }}
               />
               <Bar dataKey="orders" radius={[12, 12, 0, 0]} animationDuration={1000}>
-                {displayData.map((entry, index) => (
+                {displayData.map((_, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={entry.orders === maxValue ? maxColor : baseColor}
+                    fill={index === firstMaxIndex ? maxColor : baseColor}
                     className="hover:fill-[var(--chart-hover)] transition-all cursor-pointer duration-300"
                     style={{ "--chart-hover": hoverColor } as React.CSSProperties}
                   />

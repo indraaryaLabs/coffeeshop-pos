@@ -45,7 +45,7 @@ export default async function ReportsPage() {
   sevenDaysAgo.setHours(0, 0, 0, 0);
 
   const recentTxs = dbTransactions.filter((tx) => tx.createdAt >= sevenDaysAgo);
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const dayNames = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
   const volumeMap = new Map<string, { revenue: number; orders: number }>();
   
   // Initialize last 7 days

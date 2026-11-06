@@ -23,8 +23,12 @@ export function WeeklyRevenueChart({ data = [] }: { data?: WeeklyDataPoint[] }) 
   const [metric, setMetric] = useState<"revenue" | "orders">("revenue");
   const { resolvedTheme } = useTheme();
 
-  // Find max value to color it differently
+  // Find max value to color it differently. When several bars tie for the
+  // maximum, only the first one is highlighted so the chart keeps a single
+  // visual anchor.
   const maxValue = data.length > 0 ? Math.max(...data.map((d) => d[metric])) : 0;
+  const firstMaxIndex =
+    data.findIndex((d) => d[metric] === maxValue && maxValue > 0);
   const totalRevenue = data.reduce((sum, d) => sum + d.revenue, 0);
   const totalOrders = data.reduce((sum, d) => sum + d.orders, 0);
 
@@ -115,10 +119,10 @@ export function WeeklyRevenueChart({ data = [] }: { data?: WeeklyDataPoint[] }) 
                 }}
               />
               <Bar dataKey={metric} radius={[6, 6, 0, 0]} animationDuration={1000}>
-                {data.map((entry, index) => (
+                {data.map((_, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={entry[metric] === maxValue && maxValue > 0 ? maxColor : baseColor}
+                    fill={index === firstMaxIndex ? maxColor : baseColor}
                     className="hover:fill-[var(--chart-hover)] transition-all duration-300"
                     style={{ "--chart-hover": hoverColor } as React.CSSProperties}
                   />

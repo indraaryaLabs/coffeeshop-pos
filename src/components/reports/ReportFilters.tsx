@@ -61,7 +61,7 @@ export function ReportFilters({
           <SelectTrigger className="bg-card rounded-xl border-border h-11">
             <div className="flex items-center gap-2">
               <CalendarRange className="w-4 h-4 text-muted-foreground" />
-              <SelectValue placeholder="Pilih periode" />
+              <SelectValue>{DATE_LABEL[dateRange] ?? dateRange}</SelectValue>
             </div>
           </SelectTrigger>
           <SelectContent>
@@ -87,7 +87,7 @@ export function ReportFilters({
           <SelectTrigger className="bg-card rounded-xl border-border h-11">
             <div className="flex items-center gap-2">
               <Banknote className="w-4 h-4 text-muted-foreground" />
-              <SelectValue placeholder="Semua metode" />
+              <SelectValue>{PAYMENT_LABEL[paymentMethod] ?? paymentMethod}</SelectValue>
             </div>
           </SelectTrigger>
           <SelectContent>
