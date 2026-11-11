@@ -41,12 +41,12 @@ Requirements: Node.js 22+ and a running PostgreSQL instance.
 ```bash
 # 1. Start Postgres (Docker) or point DATABASE_URL at a hosted instance
 docker run --name coffee-pos-db -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=coffee_pos -p 5432:5432 -d postgres:17-alpine
+ -e POSTGRES_DB=coffee_pos -p 5432:5432 -d postgres:17-alpine
 
 # 2. Install and configure
 npm install
 cp .env.example .env
-# edit .env → set DATABASE_URL and ADMIN_EMAIL / ADMIN_PASSWORD
+# edit .env -> set DATABASE_URL and ADMIN_EMAIL / ADMIN_PASSWORD
 
 # 3. Apply schema, create the admin, load demo data
 npm run db:push
@@ -57,7 +57,7 @@ npm run db:seed
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) and sign in with the admin credentials from `.env`. Barista accounts can be created from the signup page — roles are managed later by an admin in **Pengaturan → Pengguna**. In production, `NEXT_PUBLIC_APP_URL` must match the deployed origin.
+Open [http://localhost:3000](http://localhost:3000) and sign in with the admin credentials from `.env`. Barista accounts can be created from the signup page — roles are managed later by an admin in **Pengaturan -> Pengguna**. In production, `NEXT_PUBLIC_APP_URL` must match the deployed origin.
 
 ### Environment variables
 
@@ -86,16 +86,16 @@ Without Supabase keys, product photo uploads fall back to a local placeholder; e
 ## Project structure
 
 ```
-src/app/(auth)/        # login, signup (Indonesian UI)
-src/app/(dashboard)/   # dashboard, POS, inventory, reports, settings
-src/components/pos/    # product grid, cart, order sidebar, thermal receipt
-src/components/        # dashboard / reports / inventory / settings / layout / ui
-src/lib/db/schema.ts   # Drizzle schema: products, inventory, recipes, transactions, shifts, shop_settings
-src/lib/actions/       # server actions: transactions, products, inventory, settings
-scripts/               # create-admin, seed loader, synthetic_data.sql
-drizzle/               # SQL migrations
-public/images/         # product photos + placeholder
-.github/workflows/     # CI
+src/app/(auth)/ # login, signup (Indonesian UI)
+src/app/(dashboard)/ # dashboard, POS, inventory, reports, settings
+src/components/pos/ # product grid, cart, order sidebar, thermal receipt
+src/components/ # dashboard / reports / inventory / settings / layout / ui
+src/lib/db/schema.ts # Drizzle schema: products, inventory, recipes, transactions, shifts, shop_settings
+src/lib/actions/ # server actions: transactions, products, inventory, settings
+scripts/ # create-admin, seed loader, synthetic_data.sql
+drizzle/ # SQL migrations
+public/images/ # product photos + placeholder
+.github/workflows/ # CI
 ```
 
 ## Notes
